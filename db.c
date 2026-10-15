@@ -1,26 +1,22 @@
 #include <stddef.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 #include "db.h"
 //TODO: Fix path
-#include "../IOOPM_inlupp1/hash_table.h"
-#include "../IOOPM_inlupp1/hash_table_iterator.h"
+#include "hash_table.h"
+#include "hash_table_iterator.h"
+#include "linked_list.h"
+#include "linked_list_iterator.h"
 
-#include "../IOOPM_inlupp1/linked_list.h"
-#include "../IOOPM_inlupp1/linked_list_iterator.h"
 
-struct item
-{
-    char *name;
-    char *desc;
-    int price;
-
-};
-typedef struct item item_t;
 
 //TODO: Fix name
 struct db_merch
 {
-    item_t *item;
+    char *name;
+    char *desc;
+    int price;
     ioopm_list_t *locs;
 };
 
@@ -29,7 +25,7 @@ typedef struct db_merch db_merch_t;
 struct  shelf
 {
     char *name;
-    int amount;
+    size_t amount;
 };
 typedef struct shelf shelf_t;
 
@@ -38,6 +34,38 @@ struct db
 {
     ioopm_hash_table_t *merch; // name -> merch;
 };
+
+shelf_t *create_shelf(char *name, size_t amount)
+{
+    shelf_t *shelf = calloc(1, sizeof(shelf_t));
+    shelf->name = name;
+    shelf->amount = amount;
+    return shelf;
+}
+
+void destroy_shelf(shelf_t *shelf)
+{
+    free(shelf->name);
+    free(shelf);
+}
+
+void destroy_merch(db_merch_t *merch)
+{
+    free(merch->name);
+    free(merch->desc);
+    ioopm_list_iterator_t *it;
+    for(it = ioopm_list_iterator_create(merch->locs);
+        !ioopm_list_iterator_at_end(it);
+        ioopm_list_iterator_advance(it))
+        {
+            shelf_t *shelf = ioopm_list_iterator_current(it).p;
+            destroy_shelf(shelf);
+        }
+    ioopm_list_iterator_destroy(it);
+    
+    ioopm_list_destroy(merch->locs);
+    free(merch);
+}
 
 db_t *create_db()
 {
@@ -48,18 +76,128 @@ db_t *create_db()
     
 }
 
+
 void destroy_db(db_t *db)
 {
     ioopm_hash_table_iterator_t *it;
     for(it = ioopm_hash_table_iterator_create(db->merch);
-        ioopm_hash_table_iterator_at_end(it);
+        !ioopm_hash_table_iterator_at_end(it);
         ioopm_hash_table_iterator_advance(it))
-        {
+        {   
             db_merch_t *merch = (db_merch_t *) ioopm_hash_table_iterator_current_value(it).p;
-            free(merch->item);
-            ioopm_list_destroy(merch->locs);
+            destroy_merch(merch);
         }
     ioopm_hash_table_iterator_destroy(it);
+    ioopm_hash_table_destroy(db->merch);
     free(db);
-
 }
+
+
+db_merch_t *create_merch(char *name, char *desc, int price)
+{
+    db_merch_t *merch = calloc(1, sizeof(db_merch_t));
+    merch->name = name;
+    merch->desc = desc;
+    merch->price = price;
+    merch->locs = ioopm_list_create();
+    return merch;
+}
+
+
+
+bool add_merch(db_t *db, char *name, char *desc, int price)
+{
+    if(ioopm_hash_table_has_key(db->merch, PTR_AS_ELEM(name)))
+    {
+        return false;
+    }
+    db_merch_t *merch = create_merch(strdup(name), strdup(desc), price);
+    ioopm_hash_table_insert(db->merch, PTR_AS_ELEM(merch->name), PTR_AS_ELEM(merch));
+    return true;
+}
+
+bool remove_merch(db_t *db, char *name)
+{
+    value_t res; 
+    if(!ioopm_hash_table_remove(db->merch, PTR_AS_ELEM(name), &res))
+    {
+        return false;
+    }
+    destroy_merch(res.p);
+    return true;
+}
+
+bool is_on_shelf(db_merch_t *merch, char *loc_name, shelf_t **res)
+{
+    ioopm_list_iterator_t *it;
+    for(it = ioopm_list_iterator_create(merch->locs);
+        !ioopm_list_iterator_at_end(it);
+        ioopm_list_iterator_advance(it))
+        {
+            shelf_t *shelf = ioopm_list_iterator_current(it).p;
+            if(strcmp(loc_name, shelf->name) == 0)
+            {
+                ioopm_list_iterator_destroy(it);
+                *res = shelf;
+                return true;
+            }
+        }
+    ioopm_list_iterator_destroy(it);
+    return false;
+}
+
+
+bool add_stock(db_t *db, char *name, char *loca, size_t amount)
+{
+    value_t res;
+    if(!ioopm_hash_table_lookup(db->merch, PTR_AS_ELEM(name), &res))
+    {
+        return false;
+    }
+    db_merch_t *merch = res.p;
+    shelf_t *shelf;
+    if(is_on_shelf(merch, loca, &shelf))
+    {
+        shelf->amount += amount;
+        return true;
+    }
+    shelf = create_shelf(strdup(loca), amount);
+    ioopm_list_append(merch->locs, PTR_AS_ELEM(shelf));
+    return true;
+}
+// takes db name of merch and returns sets locs to the relevents merch's list of locations
+bool get_locs(db_t *db, char *name, ioopm_list_t **locs)
+{
+    value_t res;
+    if(!ioopm_hash_table_lookup(db->merch, PTR_AS_ELEM(name), &res))
+    {
+        return false;
+    }
+    *locs = ((db_merch_t *) res.p)->locs;
+    return true;
+}
+
+//given a db and name of merch sets res to the total amount of that merch
+bool get_stock(db_t *db, char *name, size_t *res)
+{
+    ioopm_list_t *locs;
+    if(!get_locs(db, name, &locs))
+    {
+        return false;
+    }
+    size_t stock = 0;
+    ioopm_list_iterator_t *it;
+    for(it = ioopm_list_iterator_create(locs);
+        !ioopm_list_iterator_at_end(it);
+        ioopm_list_iterator_advance(it))
+    {
+        shelf_t *shelf = ioopm_list_iterator_current(it).p;
+        stock += shelf->amount;
+    }
+    ioopm_list_iterator_destroy(it);
+    *res = stock;
+    return true;
+}
+
+
+
