@@ -4,14 +4,16 @@
 #include <string.h>
 #include "db.h"
 //TODO: Fix path
-#include "hash_table.h"
-#include "hash_table_iterator.h"
-#include "linked_list.h"
-#include "linked_list_iterator.h"
+#include "../IOOPM_inlupp1/hash_table.h"
+#include "../IOOPM_inlupp1/hash_table_iterator.h"
+#include "../IOOPM_inlupp1/linked_list.h"
+#include "../IOOPM_inlupp1/linked_list_iterator.h"
 
 
 
 //TODO: Fix name
+
+
 struct db_merch
 {
     char *name;
@@ -127,6 +129,26 @@ bool remove_merch(db_t *db, char *name)
     return true;
 }
 
+//bool get_merch(db_t *db, char *name)
+
+bool edit_merch(db_t *db, char *name, char *new_name, char* new_desc, size_t new_price)
+{
+    value_t res, res2;
+    //if the new name is taken by any merch other than the merch we want edit we fail.
+    if(!ioopm_hash_table_lookup(db->merch, PTR_AS_ELEM(name), &res)
+        ||(ioopm_hash_table_lookup(db->merch, PTR_AS_ELEM(new_name), &res2)
+        && res.p != res2.p))
+    {
+        return false;
+    }
+    ioopm_hash_table_remove(db->merch, PTR_AS_ELEM(name), &res);
+    db_merch_t *old_merch = res.p;
+    destroy_merch(old_merch);
+    add_merch(db, new_name, new_desc, new_price);
+    return true;
+
+}
+
 bool is_on_shelf(db_merch_t *merch, char *loc_name, shelf_t **res)
 {
     ioopm_list_iterator_t *it;
@@ -199,5 +221,47 @@ bool get_stock(db_t *db, char *name, size_t *res)
     return true;
 }
 
+void insert_in_order(db_merch_t *to_insert, ioopm_list_t *list)
+{
+    ioopm_list_iterator_t *list_it;
+    if(ioopm_list_is_empty(list))
+    {
+        ioopm_list_append(list, PTR_AS_ELEM(to_insert));
+    }
+    for(list_it = ioopm_list_iterator_create(list);
+        !ioopm_list_iterator_at_end(list_it);
+        ioopm_list_iterator_advance(list_it));
+        {
+            db_merch_t *current_merch = ioopm_list_iterator_current(list_it).p;
+            if(strcmp(to_insert->name, current_merch->name) <= 0)
+            {
+                ioopm_list_iterator_insert(list_it, PTR_AS_ELEM(to_insert));
+                return;
+            }
 
+        }
+    ioopm_list_iterator_insert(list_it, PTR_AS_ELEM(to_insert));
+    ioopm_list_iterator_destroy(list_it);
+}
 
+ioopm_list_t *get_all_items(db_t *db)
+{
+    ioopm_list_t *res_list = ioopm_list_create();
+    ioopm_hash_table_iterator_t *hash_it;
+    for(hash_it = ioopm_hash_table_iterator_create(db->merch);
+        !ioopm_hash_table_iterator_at_end(hash_it);
+        ioopm_hash_table_iterator_advance(hash_it))
+        {
+            ioopm_list_iterator_t *list_it;
+            db_merch_t *to_insert = ioopm_hash_table_iterator_current_value(hash_it).p;
+            for(list_it = ioopm_list_iterator_create(res_list);
+                !ioopm_list_iterator_at_end(list_it);
+                ioopm_list_iterator_advance(list_it));
+                {
+                    db_merch_t *current_merch = ioopm_list_iterator_current(list_it).p;
+                    insert_in_order(current_merch, res_list);
+                }
+        }
+        ioopm_hash_table_iterator_destroy(hash_it);
+        return res_list;
+}

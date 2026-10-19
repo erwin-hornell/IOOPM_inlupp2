@@ -33,6 +33,8 @@ bool add_merch(db_t *db, char *name, char *desc, int price);
 /// @note dosnt take ownership of string
 bool remove_merch(db_t *db, char *name);
 
+bool edit_merch(db_t *db, char *name, char *new_name, char* new_desc, size_t new_price);
+
 /// @note dosnt take ownership of string
 bool add_stock(db_t *db, char *name, char *loca, size_t amount);
 
@@ -41,3 +43,5 @@ bool get_locs(db_t *db, char *name, ioopm_list_t **locs);
 
 /// @note dosnt take ownership of string
 bool get_stock(db_t *db, char *name, size_t *res);
+
+ioopm_list_t *get_all_items(db_t *db);
