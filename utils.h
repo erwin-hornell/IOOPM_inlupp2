@@ -1,29 +1,29 @@
 #pragma once
 
-#include <stdlib.h>
-
-struct item
-{
-    char *name;
-    char *desc;
-    int price;
-};
-
 typedef struct item item_t;
 
-item_t *create_item(char *name, char *desc, int price)
-{
-    item_t *item = calloc(1, sizeof(item_t));
-    item->name = name;
-    item->desc = desc;
-    item->price = price;
+/// @brief creates an item
+/// @param name the item's name
+/// @param desc the item's description
+/// @param price the item's price in SEK
+/// @return item pointer
+item_t *create_item(char *name, char *desc, int price);
 
-    return item;
-}
+/// @brief destroys an item, freeing its memory
+/// @param item an item
+void destroy_item(item_t *item);
 
-void destroy_item(item_t *item)
-{
-    free(item->name);
-    free(item->desc);
-    free(item);
-}
+/// @brief gets the name of an item struct
+/// @param item the item
+/// @return the item's name
+char *item_name(item_t *item);
+
+/// @brief gets the description of an item struct
+/// @param item the item
+/// @return the item's description
+char *item_desc(item_t *item);
+
+/// @brief gets the price of an item struct
+/// @param item the item
+/// @return the item's price in SEK
+int item_price(item_t *item);

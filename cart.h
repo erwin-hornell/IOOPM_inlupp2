@@ -1,0 +1,37 @@
+#pragma once
+
+#include <string.h>
+
+#include "db.h"
+#include "cart.c"
+
+#include "../IOOPM_inlupp1/hash_table.h"
+#include "../IOOPM_inlupp1/hash_table_iterator.h"
+
+#include "../IOOPM_inlupp1/linked_list.h"
+#include "../IOOPM_inlupp1/linked_list_iterator.h"
+
+typedef struct cart cart_t;
+
+/// @brief creates a cart
+/// @return pointer to cart
+cart_t *cart_create();
+
+/// @brief destroys a cart
+/// @param cart a cart
+void cart_destroy(cart_t *cart);
+
+/// @brief adds some quantity of a merch to the cart
+/// @param cart a cart
+/// @param db a database
+/// @param name name of some merch in the database
+/// @param amount how many to add to the cart
+/// @return boolean representing if merch was sucessfully added to cart
+bool cart_add(cart_t *cart, db_t *db, char *name, size_t amount);
+
+/// @brief removes some quantity of a merch from the cart
+/// @param cart a cart
+/// @param name the name of some merch in the database
+/// @param amount how many to remove from the cart
+/// @return boolean representing if merch was sucessfully removed cart
+bool cart_remove(cart_t *cart, char *name, size_t amount);

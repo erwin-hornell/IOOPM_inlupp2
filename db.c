@@ -1,4 +1,3 @@
-#include "utils.h"
 // standard
 #include <stddef.h>
 #include <stdlib.h>
@@ -6,6 +5,7 @@
 #include <string.h>
 // header
 #include "db.h"
+#include "utils.h"
 // hash table
 #include "../IOOPM_inlupp1/hash_table.h"
 #include "../IOOPM_inlupp1/hash_table_iterator.h"
@@ -108,7 +108,7 @@ bool add_merch(db_t *db, char *name, char *desc, int price)
         return false;
     }
     db_merch_t *merch = create_merch(strdup(name), strdup(desc), price);
-    ioopm_hash_table_insert(db->merch, PTR_AS_ELEM(merch->item->name), PTR_AS_ELEM(merch));
+    ioopm_hash_table_insert(db->merch, PTR_AS_ELEM(item_name(merch->item)), PTR_AS_ELEM(merch));
     return true;
 }
 
