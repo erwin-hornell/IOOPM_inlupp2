@@ -108,7 +108,7 @@ bool add_merch(db_t *db, char *name, char *desc, int price)
         return false;
     }
     db_merch_t *merch = create_merch(strdup(name), strdup(desc), price);
-    ioopm_hash_table_insert(db->merch, PTR_AS_ELEM(merch->item->name), PTR_AS_ELEM(merch));
+    ioopm_hash_table_insert(db->merch, PTR_AS_ELEM(item_name(merch->item)), PTR_AS_ELEM(merch));
     return true;
 }
 
@@ -123,7 +123,7 @@ bool remove_merch(db_t *db, char *name)
     return true;
 }
 
-//bool get_merch(db_t *db, char *name)
+
 
 bool edit_merch(db_t *db, char *name, char *new_name, char* new_desc, size_t new_price)
 {
@@ -142,6 +142,19 @@ bool edit_merch(db_t *db, char *name, char *new_name, char* new_desc, size_t new
     return true;
 
 }
+
+bool get_merch(db_t *db, char *name, item_t **item)
+{
+    value_t res;
+    if(!ioopm_hash_table_lookup(db->merch, PTR_AS_ELEM(name), &res))
+    {
+        return false;
+    }
+    db_merch_t *merch = res.p;
+    *item = merch->item;
+    return true;
+}
+
 
 bool is_on_shelf(db_merch_t *merch, char *loc_name, shelf_t **res)
 {
@@ -216,26 +229,29 @@ bool get_stock(db_t *db, char *name, size_t *res)
     return true;
 }
 
-void insert_in_order(db_merch_t *to_insert, ioopm_list_t *list)
+void insert_in_order(item_t *to_insert, ioopm_list_t *list)
 {
-    ioopm_list_iterator_t *list_it;
     if(ioopm_list_is_empty(list))
     {
         ioopm_list_append(list, PTR_AS_ELEM(to_insert));
+        return;
     }
+    ioopm_list_iterator_t *list_it;
+
     for(list_it = ioopm_list_iterator_create(list);
         !ioopm_list_iterator_at_end(list_it);
-        ioopm_list_iterator_advance(list_it));
+        ioopm_list_iterator_advance(list_it))
         {
-            db_merch_t *current_merch = ioopm_list_iterator_current(list_it).p;
-            if(strcmp(to_insert->name, current_merch->name) <= 0)
+            item_t *current_merch = ioopm_list_iterator_current(list_it).p;
+            if(strcmp(item_name(to_insert), item_name(current_merch)) < 0)
             {
                 ioopm_list_iterator_insert(list_it, PTR_AS_ELEM(to_insert));
+                ioopm_list_iterator_destroy(list_it);
                 return;
             }
 
         }
-    ioopm_list_iterator_insert(list_it, PTR_AS_ELEM(to_insert));
+    ioopm_list_append(list, PTR_AS_ELEM(to_insert));
     ioopm_list_iterator_destroy(list_it);
 }
 
@@ -247,15 +263,8 @@ ioopm_list_t *get_all_items(db_t *db)
         !ioopm_hash_table_iterator_at_end(hash_it);
         ioopm_hash_table_iterator_advance(hash_it))
         {
-            ioopm_list_iterator_t *list_it;
             db_merch_t *to_insert = ioopm_hash_table_iterator_current_value(hash_it).p;
-            for(list_it = ioopm_list_iterator_create(res_list);
-                !ioopm_list_iterator_at_end(list_it);
-                ioopm_list_iterator_advance(list_it));
-                {
-                    db_merch_t *current_merch = ioopm_list_iterator_current(list_it).p;
-                    insert_in_order(current_merch, res_list);
-                }
+            insert_in_order(to_insert->item, res_list);
         }
         ioopm_hash_table_iterator_destroy(hash_it);
         return res_list;

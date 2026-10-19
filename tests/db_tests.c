@@ -1,7 +1,7 @@
 #include <CUnit/Basic.h>
 #include <string.h>
 #include "../db.h"
-
+#include "../utils.h"
 
 // ---------------------------------------------------------
 // Create / destroy
@@ -71,6 +71,26 @@ void test_db_remove_once()
 }
 
 // ---------------------------------------------------------
+// Get item
+// ---------------------------------------------------------
+
+void test_db_get_once()
+{
+    db_t *db = create_db();
+    char *name = "car";
+    char *desc = "a red mazda";
+    int price = 101;
+
+    CU_ASSERT_TRUE(add_merch(db, name, desc, price));
+    item_t *item; 
+    CU_ASSERT_TRUE(get_merch(db, name, &item));
+    CU_ASSERT_EQUAL(strcmp(item_name(item), name), 0);
+    destroy_db(db);
+}
+
+
+
+// ---------------------------------------------------------
 // Edit
 // ---------------------------------------------------------
 
@@ -134,10 +154,11 @@ void test_db_update_stock()
 // Get all items
 // ---------------------------------------------------------
 
-void test_db_edit_exiting_name()
+void test_db_get_all()
 {
     db_t *db = create_db();
-    char *names[] = {"item1", "item2", "item3", "item4", "item5", "item6"};
+    char *names[] = {"monkey", "ape", "orangutan", "chimp", "human", "neanderthal"};
+    char *order[] = {"ape", "chimp", "human", "monkey", "neanderthal", "orangutan"};
     char *desc[] = {"desc1", "desc2", "desc3", "desc4", "desc5", "desc6"};
     int price = 101;
     for(int i = 0; i < 6; i++)
@@ -145,15 +166,20 @@ void test_db_edit_exiting_name()
         CU_ASSERT_TRUE(add_merch(db, names[i], desc[i], price));
     }
     ioopm_list_t *items = get_all_items(db);
-    
+    CU_ASSERT_EQUAL(ioopm_list_size(items), 6);
     ioopm_list_iterator_t *it;
+    int index = 0;
     for(it = ioopm_list_iterator_create(items);
         !ioopm_list_iterator_at_end(it);
         ioopm_list_iterator_advance(it))
         {
-            
+            item_t *item = ioopm_list_iterator_current(it).p;
+
+            CU_ASSERT_TRUE(strcmp(item_name(item), order[index]) == 0);
+            index++;
         }
     ioopm_list_iterator_destroy(it);
+    ioopm_list_destroy(items);
 
     destroy_db(db);
 }
@@ -173,6 +199,8 @@ int main(void)
     CU_add_test(suite, "adds 1 item", test_db_add_once);
     CU_add_test(suite, "adds the same item twice", test_db_add_same);
 
+    CU_add_test(suite, "get existing item", test_db_get_once);
+
     CU_add_test(suite, "removes from empty db", test_db_remove_empty);
     CU_add_test(suite, "removes existing item", test_db_remove_once);
 
@@ -180,6 +208,8 @@ int main(void)
     CU_add_test(suite, "Try to edit merch to exiting name", test_db_edit_exiting_name);
 
     CU_add_test(suite, "update stock once", test_db_update_stock);
+
+    CU_add_test(suite, "Get all items from db", test_db_get_all);
 
 
 
