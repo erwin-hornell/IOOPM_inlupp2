@@ -1,24 +1,21 @@
+#include "utils.h"
+// standard
 #include <stddef.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+// header
 #include "db.h"
-//TODO: Fix path
+// hash table
 #include "../IOOPM_inlupp1/hash_table.h"
 #include "../IOOPM_inlupp1/hash_table_iterator.h"
+// linked list
 #include "../IOOPM_inlupp1/linked_list.h"
 #include "../IOOPM_inlupp1/linked_list_iterator.h"
 
-
-
-//TODO: Fix name
-
-
 struct db_merch
 {
-    char *name;
-    char *desc;
-    int price;
+    item_t *item;
     ioopm_list_t *locs;
 };
 
@@ -53,8 +50,7 @@ void destroy_shelf(shelf_t *shelf)
 
 void destroy_merch(db_merch_t *merch)
 {
-    free(merch->name);
-    free(merch->desc);
+    destroy_item(merch->item);
     ioopm_list_iterator_t *it;
     for(it = ioopm_list_iterator_create(merch->locs);
         !ioopm_list_iterator_at_end(it);
@@ -98,9 +94,7 @@ void destroy_db(db_t *db)
 db_merch_t *create_merch(char *name, char *desc, int price)
 {
     db_merch_t *merch = calloc(1, sizeof(db_merch_t));
-    merch->name = name;
-    merch->desc = desc;
-    merch->price = price;
+    merch->item = create_item(name, desc, price);
     merch->locs = ioopm_list_create();
     return merch;
 }
@@ -114,7 +108,7 @@ bool add_merch(db_t *db, char *name, char *desc, int price)
         return false;
     }
     db_merch_t *merch = create_merch(strdup(name), strdup(desc), price);
-    ioopm_hash_table_insert(db->merch, PTR_AS_ELEM(merch->name), PTR_AS_ELEM(merch));
+    ioopm_hash_table_insert(db->merch, PTR_AS_ELEM(merch->item->name), PTR_AS_ELEM(merch));
     return true;
 }
 
@@ -187,6 +181,7 @@ bool add_stock(db_t *db, char *name, char *loca, size_t amount)
     ioopm_list_append(merch->locs, PTR_AS_ELEM(shelf));
     return true;
 }
+
 // takes db name of merch and returns sets locs to the relevents merch's list of locations
 bool get_locs(db_t *db, char *name, ioopm_list_t **locs)
 {
