@@ -1,5 +1,4 @@
 #include <stdlib.h>
-
 #include "utils.h"
 
 struct item
@@ -8,8 +7,6 @@ struct item
     char *desc;
     int price;
 };
-
-typedef struct item item_t;
 
 item_t *create_item(char *name, char *desc, int price)
 {
@@ -32,12 +29,10 @@ char *item_name(item_t *item)
 {
     return item->name;
 }
-
 char *item_desc(item_t *item)
 {
     return item->desc;
-}
-
+} 
 int item_price(item_t *item)
 {
     return item->price;

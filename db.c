@@ -123,6 +123,39 @@ bool remove_merch(db_t *db, char *name)
     return true;
 }
 
+
+
+bool edit_merch(db_t *db, char *name, char *new_name, char* new_desc, size_t new_price)
+{
+    value_t res, res2;
+    //if the new name is taken by any merch other than the merch we want edit we fail.
+    if(!ioopm_hash_table_lookup(db->merch, PTR_AS_ELEM(name), &res)
+        ||(ioopm_hash_table_lookup(db->merch, PTR_AS_ELEM(new_name), &res2)
+        && res.p != res2.p))
+    {
+        return false;
+    }
+    ioopm_hash_table_remove(db->merch, PTR_AS_ELEM(name), &res);
+    db_merch_t *old_merch = res.p;
+    destroy_merch(old_merch);
+    add_merch(db, new_name, new_desc, new_price);
+    return true;
+
+}
+
+bool get_merch(db_t *db, char *name, item_t **item)
+{
+    value_t res;
+    if(!ioopm_hash_table_lookup(db->merch, PTR_AS_ELEM(name), &res))
+    {
+        return false;
+    }
+    db_merch_t *merch = res.p;
+    *item = merch->item;
+    return true;
+}
+
+
 bool is_on_shelf(db_merch_t *merch, char *loc_name, shelf_t **res)
 {
     ioopm_list_iterator_t *it;
@@ -194,4 +227,45 @@ bool get_stock(db_t *db, char *name, size_t *res)
     ioopm_list_iterator_destroy(it);
     *res = stock;
     return true;
+}
+
+void insert_in_order(item_t *to_insert, ioopm_list_t *list)
+{
+    if(ioopm_list_is_empty(list))
+    {
+        ioopm_list_append(list, PTR_AS_ELEM(to_insert));
+        return;
+    }
+    ioopm_list_iterator_t *list_it;
+
+    for(list_it = ioopm_list_iterator_create(list);
+        !ioopm_list_iterator_at_end(list_it);
+        ioopm_list_iterator_advance(list_it))
+        {
+            item_t *current_merch = ioopm_list_iterator_current(list_it).p;
+            if(strcmp(item_name(to_insert), item_name(current_merch)) < 0)
+            {
+                ioopm_list_iterator_insert(list_it, PTR_AS_ELEM(to_insert));
+                ioopm_list_iterator_destroy(list_it);
+                return;
+            }
+
+        }
+    ioopm_list_append(list, PTR_AS_ELEM(to_insert));
+    ioopm_list_iterator_destroy(list_it);
+}
+
+ioopm_list_t *get_all_items(db_t *db)
+{
+    ioopm_list_t *res_list = ioopm_list_create();
+    ioopm_hash_table_iterator_t *hash_it;
+    for(hash_it = ioopm_hash_table_iterator_create(db->merch);
+        !ioopm_hash_table_iterator_at_end(hash_it);
+        ioopm_hash_table_iterator_advance(hash_it))
+        {
+            db_merch_t *to_insert = ioopm_hash_table_iterator_current_value(hash_it).p;
+            insert_in_order(to_insert->item, res_list);
+        }
+        ioopm_hash_table_iterator_destroy(hash_it);
+        return res_list;
 }
