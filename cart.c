@@ -25,6 +25,7 @@ struct cart
 };
 typedef struct cart cart_t;
 
+
 cart_item_t *cart_item_create(item_t *item, size_t amount)
 {
     cart_item_t *cart_item = calloc(1, sizeof(cart_item_t));
@@ -33,6 +34,14 @@ cart_item_t *cart_item_create(item_t *item, size_t amount)
 
     return cart_item;
 }
+
+
+/// @note does NOT destroy item_t, this is a cart_item_t!
+void cart_item_destroy(cart_item_t *cart_item)
+{
+    free(cart_item);
+}
+
 
 cart_t *cart_create()
 {
@@ -44,9 +53,21 @@ cart_t *cart_create()
 
 void cart_destroy(cart_t *cart)
 {
+    // destroy cart_item_t:s (not the item_t:s used by database!!!)
+    ioopm_hash_table_iterator_t *it;
+    for (it = ioopm_hash_table_iterator_create(cart->items);
+        !ioopm_hash_table_iterator_at_end(it);
+        ioopm_hash_table_iterator_advance(it))
+        {
+            cart_item_t *cart_item = ioopm_hash_table_iterator_current_value(it).p;
+            cart_item_destroy(cart_item);
+        }
+    ioopm_hash_table_iterator_destroy(it);
+
     ioopm_hash_table_destroy(cart->items);
     free(cart);
 }
+
 
 void cart_add(cart_t *cart, item_t *item, size_t amount)
 {
@@ -63,6 +84,38 @@ void cart_add(cart_t *cart, item_t *item, size_t amount)
         ioopm_hash_table_insert(cart->items, PTR_AS_ELEM(item_name(item)), PTR_AS_ELEM(cart_item));
     }
 }
+
+
+bool cart_remove(cart_t *cart, item_t *item, size_t amount)
+{
+    // lookup item
+    value_t cart_item_v;
+    if (!ioopm_hash_table_lookup(cart->items, PTR_AS_ELEM(item_name(item)), &cart_item_v))
+    {
+        // item was not present in cart
+        return false;
+    }
+
+    // item type in cart
+    cart_item_t *cart_item = cart_item_v.p;
+
+    if (amount > cart_item->amount)
+    { // we are trying to remove more than is in the cart
+        return false;
+    }
+    else if (amount == cart_item->amount)
+    { // we are removing the entire amount
+        ioopm_hash_table_remove(cart->items, PTR_AS_ELEM(item_name(item)), &cart_item_v);
+        cart_item_destroy(cart_item);
+        return true;
+    }
+    else
+    { // decrement cart's amount
+        cart_item->amount -= amount;
+        return true;
+    }
+}
+
 
 size_t cart_amount(cart_t *cart, item_t *item)
 {

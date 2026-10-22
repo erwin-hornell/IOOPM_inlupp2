@@ -24,18 +24,7 @@ void test_cart_add_once()
 
     item_t *item = create_item("item", "an epic item", 99);
     cart_add(cart, item, 1);
-    CU_ASSERT_EQUAL(cart_amount(cart, "item"), 1);
-
-    cart_destroy(cart);
-}
-
-void test_cart_add_once()
-{
-    cart_t *cart = cart_create();
-
-    item_t *item = create_item("item", "an epic item", 99);
-    cart_add(cart, item, 1);
-    CU_ASSERT_EQUAL(cart_amount(cart, "item"), 1);
+    CU_ASSERT_EQUAL(cart_amount(cart, item), 1);
 
     cart_destroy(cart);
 }
@@ -47,15 +36,15 @@ void test_cart_add_once()
 void test_cart_remove_all()
 {
     char *name = "car", *desc = "a fast car";
-    size_t price = 99, amount = 1; 
+    size_t price = 99, amount = 1;
 
     cart_t *cart = cart_create();
 
-    item_t *item = create_item(name, desc, amount);
+    item_t *item = create_item(name, desc, price);
     cart_add(cart, item, amount);
-    CU_ASSERT_EQUAL(cart_amount(cart, "item"), amount);
-    cart_remove(cart, name, amount);
-    CU_ASSERT_EQUAL(cart_amount(cart, "item"), 0);
+    CU_ASSERT_EQUAL(cart_amount(cart, item), amount);
+    cart_remove(cart, item, amount);
+    CU_ASSERT_EQUAL(cart_amount(cart, item), 0);
 
     cart_destroy(cart);
 }
@@ -63,15 +52,15 @@ void test_cart_remove_all()
 void test_cart_remove_some()
 {
     char *name = "car", *desc = "a fast car";
-    size_t price = 99, amount = 1; 
+    size_t price = 99, amount = 2;
 
     cart_t *cart = cart_create();
 
-    item_t *item = create_item(name, desc, amount);
+    item_t *item = create_item(name, desc, price);
     cart_add(cart, item, amount);
-    CU_ASSERT_EQUAL(cart_amount(cart, "item"), amount);
-    cart_remove(cart, name, 1);
-    CU_ASSERT_EQUAL(cart_amount(cart, "item"), 1);
+    CU_ASSERT_EQUAL(cart_amount(cart, item), amount);
+    cart_remove(cart, item, 1);
+    CU_ASSERT_EQUAL(cart_amount(cart, item), 1);
 
     cart_destroy(cart);
 }
@@ -91,6 +80,8 @@ int main(void)
 
     CU_add_test(suite, "create and destroy cart", test_cart_destroy);
     CU_add_test(suite, "add one merch to cart", test_cart_destroy);
+    CU_add_test(suite, "remove all merch from cart", test_cart_remove_some);
+    CU_add_test(suite, "remove some merch from cart", test_cart_remove_all);
 
 
 
