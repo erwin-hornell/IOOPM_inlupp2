@@ -63,3 +63,18 @@ void cart_add(cart_t *cart, item_t *item, size_t amount)
         ioopm_hash_table_insert(cart->items, PTR_AS_ELEM(item_name(item)), PTR_AS_ELEM(cart_item));
     }
 }
+
+size_t cart_amount(cart_t *cart, item_t *item)
+{
+    // lookup item
+    value_t cart_item_v;
+    if (ioopm_hash_table_lookup(cart->items, PTR_AS_ELEM(item_name(item)), &cart_item_v))
+    { // item type already in cart
+        cart_item_t *cart_item = cart_item_v.p;
+        return cart_item->amount;
+    }
+    else
+    { // item type not already in cart
+        return 0;
+    }
+}
