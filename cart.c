@@ -131,3 +131,47 @@ size_t cart_amount(cart_t *cart, item_t *item)
         return 0;
     }
 }
+
+
+void insert_in_order(item_t *to_insert, ioopm_list_t *list)
+{
+    if(ioopm_list_is_empty(list))
+    {
+        ioopm_list_append(list, PTR_AS_ELEM(to_insert));
+        return;
+    }
+    ioopm_list_iterator_t *list_it;
+
+    for(list_it = ioopm_list_iterator_create(list);
+        !ioopm_list_iterator_at_end(list_it);
+        ioopm_list_iterator_advance(list_it))
+        {
+            item_t *current_merch = ioopm_list_iterator_current(list_it).p;
+            if(strcmp(item_name(to_insert), item_name(current_merch)) < 0)
+            {
+                ioopm_list_iterator_insert(list_it, PTR_AS_ELEM(to_insert));
+                ioopm_list_iterator_destroy(list_it);
+                return;
+            }
+
+        }
+    ioopm_list_append(list, PTR_AS_ELEM(to_insert));
+    ioopm_list_iterator_destroy(list_it);
+}
+
+ioopm_list_t *cart_items(cart_t *cart)
+{
+    ioopm_list_t *ls = ioopm_list_create();
+
+    ioopm_hash_table_iterator_t *it;
+    for (it = ioopm_hash_table_iterator_create(cart->items);
+        !ioopm_hash_table_iterator_at_end(it);
+        ioopm_hash_table_iterator_advance(it))
+        {
+            cart_item_t *cart_item = ioopm_hash_table_iterator_current_value(it).p;
+            insert_in_order(cart_item, ls);
+        }
+    ioopm_hash_table_iterator_destroy(it);
+
+    return ls;
+}
