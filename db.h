@@ -23,8 +23,8 @@ void destroy_db(db_t *db);
 /// @param name name of item
 /// @param desc descrition of item
 /// @param price price in SEK
-/// @return true if addition was successfull
-/// @note takes ownership of strings
+/// @return true if addition was successful
+/// @note takes ownership of strings? (copies?)
 bool add_merch(db_t *db, char *name, char *desc, int price);
 
 
@@ -65,13 +65,15 @@ bool get_merch(db_t *db, char *name, item_t **res);
 /// @note does not take ownership of data
 bool add_stock(db_t *db, char *name, char *loca, size_t amount);
 
+
 /// @brief where (shelfs) a given ware is stored
 /// @param db database to look in
 /// @param name a ware's name
-/// @param locs write result: list of shelfs where the ware is stored
+/// @param locs becomes list of shelfs where the ware is stored
 /// @return boolean representing if ware label was valid (present in database)
 /// @note does not take ownership of data
 bool get_locs(db_t *db, char *name, ioopm_list_t **locs);
+
 
 /// @brief how many of a given ware is in stock
 /// @param db database to look in

@@ -18,73 +18,54 @@ void test_cart_destroy()
 // Add
 // ---------------------------------------------------------
 
+void test_cart_add_none()
+{
+    // create cart
+    cart_t *cart = cart_create();
+
+    CU_ASSERT_TRUE(cart_amount(cart, "car") == 0);
+
+    cart_destroy(cart);
+}
+
 void test_cart_add_once()
 {
-    // create database
-    db_t *db = create_db();
-    char *name = "car";
-    char *desc = "a red mazda";
-    int price = 101;
-
-    // add merchandise to database
-    add_merch(db, name, desc, price);
-
     // create cart
     cart_t *cart = cart_create();
 
     // add merchandise to cart
-    CU_ASSERT_TRUE(cart_add(cart, db, "car", 1));
+    cart_add(cart, "car", 1);
 
-    // TODO: check precisely 1 of ware is in cart
+    CU_ASSERT_TRUE(cart_amount(cart, "car") == 1);
 
     cart_destroy(cart);
-    destroy_db(db);
 }
 
 void test_cart_add_once_two()
 {
-    // create database
-    db_t *db = create_db();
-    char *name = "car";
-    char *desc = "a red mazda";
-    int price = 101;
-
-    // add merchandise to database
-    add_merch(db, name, desc, price);
-
     // create cart
     cart_t *cart = cart_create();
 
     // add merchandise to cart
-    CU_ASSERT_TRUE(cart_add(cart, db, "car", 2));
+    cart_add(cart, "car", 2);
 
-    // TODO: check precisely 2 of ware is in cart
+    CU_ASSERT_TRUE(cart_amount(cart, "car") == 2);
 
     cart_destroy(cart);
-    destroy_db(db);
 }
 
 void test_cart_add_twice_same()
 {
-    // create database
-    db_t *db = create_db();
-    char *name = "car";
-    char *desc = "a red mazda";
-    int price = 101;
-
-    // add merchandise to database
-    add_merch(db, name, desc, price);
-
     // create cart
     cart_t *cart = cart_create();
 
     // add merchandise to cart
-    CU_ASSERT_TRUE(cart_add(cart, db, "car", 1));
-    CU_ASSERT_TRUE(cart_add(cart, db, "car", 1));
+    cart_add(cart, "car", 1);
+    cart_add(cart, "car", 1);
 
-    // TODO: check precisely 2 of ware is in cart
+    CU_ASSERT_TRUE(cart_amount(cart, "car") == 2);
 
-    destroy_db(db);
+    cart_destroy(cart);
 }
 
 // ---------------------------------------------------------
@@ -101,6 +82,7 @@ int main(void)
         NULL);
 
     CU_add_test(suite, "create & destroy cart", test_cart_destroy);
+    CU_add_test(suite, "add no items to cart", test_cart_add_none);
     CU_add_test(suite, "add item to cart once", test_cart_add_once);
     CU_add_test(suite, "add item of quanity 2 to cart at once", test_cart_add_once_two);
     CU_add_test(suite, "add same item to cart twice", test_cart_add_twice_same);

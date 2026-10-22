@@ -18,12 +18,14 @@ struct cart_item
 
 typedef struct cart_item cart_item_t;
 
+
 struct cart
 {
-    ioopm_hash_table_t *items; // name -> cart_item
+    ioopm_hash_table_t *items; // hash table: (string) name -> *cart_item
 };
 
 typedef struct cart cart_t;
+
 
 cart_t *cart_create()
 {
@@ -32,39 +34,57 @@ cart_t *cart_create()
     return cart;
 }
 
+
 void cart_destroy(cart_t *cart)
 {
     ioopm_hash_table_destroy(cart->items);
     free(cart);
 }
 
-bool cart_add(cart_t *cart, db_t *db, char *name, size_t amount)
-{
-    // TOFIX: take other carts into account, ensure carts combined don't exceed database's stock!
-    size_t ware_stock = 0;
-    get_stock(db, name, &ware_stock);
 
-    if (amount > ware_stock)
+void cart_add(cart_t *cart, char *name, size_t amount)
+{
+    size_t prior_amount = 0;
+
+    cart_item_t *item;
+    ioopm_hash_table_lookup(cart->items, PTR_AS_ELEM(name), &PTR_AS_ELEM(item));
+    if (!item)
+    {
+        create_item(name, )
+        ioopm_list_insert(ioopm_hash_table_insert(cart->items, PTR_AS_ELEM(name), PTR_AS_ELEM())
+    }
+}
+
+
+bool cart_remove(cart_t *cart, char *name, size_t amount)
+{
+    // lookup stock in cart prior to removal
+    value_t cart_item_ptr;
+    ioopm_hash_table_lookup(cart->items, PTR_AS_ELEM(name), &cart_item_ptr);
+
+    cart_item_t *cart_item = cart_item_ptr.p;
+
+    if (amount > cart_item->amount)
     {
         return false;
     }
+    else if (amount == cart_item->amount)
+    {
+        return ioopm_hash_table_remove(cart->items, PTR_AS_ELEM(name), &PTR_AS_ELEM(cart_item));
+    }
     else
     {
-        size_t prior_amount = 0;
-        ioopm_hash_table_lookup(cart->items, PTR_AS_ELEM(name), &INT_AS_ELEM(prior_amount));
-        ioopm_hash_table_insert(cart->items, PTR_AS_ELEM(name), INT_AS_ELEM(amount + prior_amount));
+        cart_item->amount--;
         return true;
     }
 }
 
-bool cart_remove(cart_t *cart, char *name, size_t amount)
+
+size_t cart_amount(cart_t *cart, char *name)
 {
-    size_t old_amount;
-
-    (void) old_amount;
-    (void) cart;
-    (void) name;
-    (void) amount;
-
-    return false;
+    // get the amount
+    value_t amount_ptr = PTR_AS_ELEM(NULL);
+    if (!ioopm_hash_table_lookup(cart->items, PTR_AS_ELEM(name), &amount_ptr)) return 0;
+    size_t *amount = amount_ptr.p;
+    return *amount;
 }

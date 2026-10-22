@@ -26,12 +26,13 @@ struct  shelf
     char *name;
     size_t amount;
 };
+
 typedef struct shelf shelf_t;
 
 
 struct db
 {
-    ioopm_hash_table_t *merch; // name -> merch;
+    ioopm_hash_table_t *merch; // name (string) -> merch;
 };
 
 shelf_t *create_shelf(char *name, size_t amount)

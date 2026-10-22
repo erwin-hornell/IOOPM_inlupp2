@@ -2,7 +2,8 @@ CC = gcc
 
 CFLAGS = -Wall -Wextra -g -I../IOOPM_inlupp1
 LDLIBS = -lcunit
-VALGRIND = valgrind
+VALGRIND = valgrind --leak-check=full
+GDB = gdb
 
 TARGET_db = db-tests
 TARGET_cart = cart-tests
@@ -34,6 +35,9 @@ tests-cart: $(TARGET_cart)
 
 valgrind-cart: $(TARGET_cart)
 	$(VALGRIND) ./$(TARGET_cart)
+
+gdb-cart: $(TARGET_cart)
+	$(GDB) ./$(TARGET_cart)
 
 clean:
 	rm -f $(TARGET_db) $(TARGET_cart) *.gcda *.gcno *.gcov
