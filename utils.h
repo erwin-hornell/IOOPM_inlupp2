@@ -1,4 +1,10 @@
 #pragma once
+// hash table
+#include "../IOOPM_inlupp1/hash_table.h"
+#include "../IOOPM_inlupp1/hash_table_iterator.h"
+// linked list
+#include "../IOOPM_inlupp1/linked_list.h"
+#include "../IOOPM_inlupp1/linked_list_iterator.h"
 
 typedef struct item item_t;
 
@@ -27,3 +33,5 @@ char *item_desc(item_t *item);
 /// @param item the item
 /// @return the item's price in SEK
 int item_price(item_t *item);
+
+void insert_in_order(item_t *to_insert, ioopm_list_t *list);

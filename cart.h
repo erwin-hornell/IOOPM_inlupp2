@@ -50,4 +50,4 @@ size_t cart_amount(cart_t *cart, item_t *item);
 /// @brief gets all items in a cart
 /// @param cart a cart
 /// @return list of item_t
-ioopm_list_t cart_items(cart_t *cart);
+ioopm_list_t *cart_items(cart_t *cart);
