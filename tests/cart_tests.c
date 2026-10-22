@@ -24,7 +24,7 @@ void test_cart_add_one()
 
     item_t *item = create_item("item", "an epic item", 99);
     cart_add(cart, item, 1);
-    CU_ASSERT_TRUE(cart_amount(cart, "item") == 1);
+    CU_ASSERT_TRUE(cart_amount(cart, item) == 1);
 
     cart_destroy(cart);
 }
