@@ -1,6 +1,6 @@
 #pragma once
 #include <stdbool.h>
-#include "utils.h"
+#include "generics/generics.h"
 #include "../IOOPM_inlupp1/hash_table.h"
 #include "../IOOPM_inlupp1/hash_table_iterator.h"
 
@@ -11,11 +11,11 @@ typedef struct db db_t;
 
 /// @brief creates a database
 /// @return database pointer
-db_t *create_db();
+db_t *db_create();
 
 /// @brief destroys merch,
 /// @param db database to destroy
-void destroy_db(db_t *db);
+void db_destroy(db_t *db);
 
 
 /// @brief inserts a new item (type) into the db if it isnt already there
@@ -82,6 +82,14 @@ bool get_locs(db_t *db, char *name, ioopm_list_t **locs);
 /// @return boolean representing if ware label was valid (present in database)
 /// @note does not take ownership of data
 bool get_stock(db_t *db, char *name, size_t *res);
+
+/// @brief removes a certain amount of an item from db
+/// @param db database to look in
+/// @param name a ware's name
+/// @param amount to remvoe
+/// @return boolean representing if the removal was successfull (present in database)
+/// @note removes nothing and fails if the amount to be removed is larger then the entire stock
+bool remove_stock(db_t *db, char *name, size_t amount);
 
 
 /// @brief returns a list of with all the items in the db

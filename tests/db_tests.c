@@ -1,7 +1,7 @@
 #include <CUnit/Basic.h>
 #include <string.h>
 #include "../db.h"
-#include "../utils.h"
+#include "../generics/generics.h"
 
 // ---------------------------------------------------------
 // Create / destroy
@@ -9,9 +9,9 @@
 
 void test_db_destroy()
 {
-    db_t *db = create_db();
+    db_t *db = db_create();
     CU_ASSERT_PTR_NOT_NULL(db);
-    destroy_db(db);
+    db_destroy(db);
 }
 
 // ---------------------------------------------------------
@@ -20,19 +20,19 @@ void test_db_destroy()
 
 void test_db_add_once()
 {
-    db_t *db = create_db();
+    db_t *db = db_create();
     char *name = "car";
     char *desc = "a red mazda";
     int price = 101;
 
     CU_ASSERT_TRUE(add_merch(db, name, desc, price));
 
-    destroy_db(db);
+    db_destroy(db);
 }
 
 void test_db_add_same()
 {
-    db_t *db = create_db();
+    db_t *db = db_create();
     char *name = "car";
     char *desc = "a red mazda";
     int price = 101;
@@ -40,7 +40,7 @@ void test_db_add_same()
     CU_ASSERT_TRUE(add_merch(db, name, desc, price));
     CU_ASSERT_FALSE(add_merch(db, name, desc, price));
 
-    destroy_db(db);
+    db_destroy(db);
 }
 
 // ---------------------------------------------------------
@@ -49,17 +49,17 @@ void test_db_add_same()
 
 void test_db_remove_empty()
 {
-    db_t *db = create_db();
+    db_t *db = db_create();
     char *name = "car";
 
     CU_ASSERT_FALSE(remove_merch(db, name));
 
-    destroy_db(db);
+    db_destroy(db);
 }
 
 void test_db_remove_once()
 {
-    db_t *db = create_db();
+    db_t *db = db_create();
     char *name = "car";
     char *desc = "a red mazda";
     int price = 101;
@@ -67,7 +67,7 @@ void test_db_remove_once()
     CU_ASSERT_TRUE(add_merch(db, name, desc, price));
     CU_ASSERT_TRUE(remove_merch(db, name));
 
-    destroy_db(db);
+    db_destroy(db);
 }
 
 // ---------------------------------------------------------
@@ -76,7 +76,7 @@ void test_db_remove_once()
 
 void test_db_get_once()
 {
-    db_t *db = create_db();
+    db_t *db = db_create();
     char *name = "car";
     char *desc = "a red mazda";
     int price = 101;
@@ -85,7 +85,7 @@ void test_db_get_once()
     item_t *item; 
     CU_ASSERT_TRUE(get_merch(db, name, &item));
     CU_ASSERT_EQUAL(strcmp(item_name(item), name), 0);
-    destroy_db(db);
+    db_destroy(db);
 }
 
 
@@ -96,7 +96,7 @@ void test_db_get_once()
 
 void test_db_edit_once()
 {
-    db_t *db = create_db();
+    db_t *db = db_create();
     char *name = "car", *new_name = "mazda";
     char *desc = "a red mazda", *new_desc = "sick car";
     int price = 101, new_price = 202;
@@ -106,12 +106,12 @@ void test_db_edit_once()
     CU_ASSERT_FALSE(remove_merch(db, name));
     CU_ASSERT_TRUE(remove_merch(db, new_name));
 
-    destroy_db(db);
+    db_destroy(db);
 }
 
 void test_db_edit_exiting_name()
 {
-    db_t *db = create_db();
+    db_t *db = db_create();
     char *name1 = "car", *name2 = "truck", *new_name = "mazda";
     char *desc1 = "a red mazda", *desc2 = "big thing", *new_desc = "sick car";
     int price1 = 101, price2 = 1001, new_price = 202;
@@ -122,7 +122,7 @@ void test_db_edit_exiting_name()
     CU_ASSERT_TRUE(remove_merch(db, name1));
     CU_ASSERT_FALSE(remove_merch(db, new_name));
 
-    destroy_db(db);
+    db_destroy(db);
 }
 
 
@@ -133,7 +133,7 @@ void test_db_edit_exiting_name()
 
 void test_db_update_stock()
 {
-    db_t *db = create_db();
+    db_t *db = db_create();
     char *name = "car";
     char *desc = "a red mazda";
     int price = 101;
@@ -146,7 +146,7 @@ void test_db_update_stock()
     CU_ASSERT_TRUE(get_stock(db, name, &res));
     CU_ASSERT_EQUAL(amount, res);
 
-    destroy_db(db);
+    db_destroy(db);
 }
 
 
@@ -156,7 +156,7 @@ void test_db_update_stock()
 
 void test_db_get_all()
 {
-    db_t *db = create_db();
+    db_t *db = db_create();
     char *names[] = {"monkey", "ape", "orangutan", "chimp", "human", "neanderthal"};
     char *order[] = {"ape", "chimp", "human", "monkey", "neanderthal", "orangutan"};
     char *desc[] = {"desc1", "desc2", "desc3", "desc4", "desc5", "desc6"};
@@ -181,7 +181,7 @@ void test_db_get_all()
     ioopm_list_iterator_destroy(it);
     ioopm_list_destroy(items);
 
-    destroy_db(db);
+    db_destroy(db);
 }
 
 

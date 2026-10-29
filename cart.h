@@ -3,7 +3,8 @@
 #include <string.h>
 
 #include "db.h"
-#include "cart.c"
+#include "generics/generics.h"
+
 
 #include "../IOOPM_inlupp1/hash_table.h"
 #include "../IOOPM_inlupp1/hash_table_iterator.h"
@@ -12,17 +13,34 @@
 #include "../IOOPM_inlupp1/linked_list_iterator.h"
 
 typedef struct cart cart_t;
+//leak cart_item to shop so that checkout logics can work
+typedef struct cart_item cart_item_t;
 
+/// @brief returns the amount of a item in the cart
+/// @param cart_item
+/// @return amount of that item in the cart
+size_t cart_item_amount(cart_item_t *cart_item);
+
+/// @brief returns the item of the cart_item
+/// @param cart_item
+/// @return item type of the cart_item
+item_t cart_item_item(cart_item_t *cart_item);
 
 /// @brief creates a cart
+/// @param id of the cart
 /// @return pointer to cart
-cart_t *cart_create();
+cart_t *cart_create(size_t t);
 
 
 /// @brief destroys a cart
 /// @param cart a cart
 void cart_destroy(cart_t *cart);
 
+
+/// @brief returns the id of a cart
+/// @param cart
+/// @return cart id
+size_t cart_id(cart_t *cart);
 
 /// @brief adds some quantity of a merch to the cart
 /// @param cart a cart
@@ -46,6 +64,12 @@ bool cart_remove(cart_t *cart, item_t *item, size_t amount);
 /// @param name a ware name
 /// @return number of given ware in the cart
 size_t cart_amount(cart_t *cart, item_t *item);
+
+
+/// @brief total cost of all items in cart
+/// @param cart a cart
+/// @return total cost of all items in cart
+size_t cart_cost(cart_t *cart);
 
 /// @brief gets all items in a cart
 /// @param cart a cart

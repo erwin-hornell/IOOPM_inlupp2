@@ -2,6 +2,7 @@
 #include <string.h>
 #include <stdio.h>
 #include "../cart.h"
+#include "../generics/generics.h"
 
 
 // ---------------------------------------------------------
@@ -10,7 +11,7 @@
 
 void test_cart_destroy()
 {
-    cart_t *cart = cart_create();
+    cart_t *cart = cart_create(1);
     CU_ASSERT_PTR_NOT_NULL_FATAL(cart);
     cart_destroy(cart);
 
@@ -25,14 +26,14 @@ void test_cart_add_once()
     char *name = "car", *desc = "a fast car";
     size_t price = 99, amount = 1; 
 
-    cart_t *cart = cart_create();
+    cart_t *cart = cart_create(1);
 
-    item_t *item = create_item(name, desc, price);
+    item_t *item = item_create(strdup(name), strdup(desc), price);
     cart_add(cart, item, amount);
     CU_ASSERT_EQUAL(cart_amount(cart, item), 1);
 
     cart_destroy(cart);
-    free(item);
+    item_destroy(item);
 
 }
 
@@ -41,16 +42,16 @@ void test_cart_add_existing()
     char *name = "car", *desc = "a fast car";
     size_t price = 99; 
 
-    cart_t *cart = cart_create();
+    cart_t *cart = cart_create(1);
 
-    item_t *item = create_item(name, desc, price);
+    item_t *item = item_create(strdup(name), strdup(desc), price);;
     cart_add(cart, item, 2);
     CU_ASSERT_EQUAL(cart_amount(cart, item), 2);
     cart_add(cart, item, 1);
     CU_ASSERT_EQUAL(cart_amount(cart, item), 3);
 
     cart_destroy(cart);
-    free(item);
+    item_destroy(item);
 
 }
 
@@ -64,16 +65,16 @@ void test_cart_remove_all()
     char *name = "car", *desc = "a fast car";
     size_t price = 99, amount = 1;
 
-    cart_t *cart = cart_create();
+    cart_t *cart = cart_create(1);
 
-    item_t *item = create_item(name, desc, price);
+    item_t *item = item_create(strdup(name), strdup(desc), price);;
     cart_add(cart, item, amount);
     CU_ASSERT_EQUAL(cart_amount(cart, item), amount);
     cart_remove(cart, item, amount);
     CU_ASSERT_EQUAL(cart_amount(cart, item), 0);
 
     cart_destroy(cart);
-    free(item);
+    item_destroy(item);
 
 }
 
@@ -82,16 +83,16 @@ void test_cart_remove_some()
     char *name = "car", *desc = "a fast car";
     size_t price = 99, amount = 2; 
 
-    cart_t *cart = cart_create();
+    cart_t *cart = cart_create(1);
 
-    item_t *item = create_item(name, desc, price);
+    item_t *item = item_create(strdup(name), strdup(desc), price);;
     cart_add(cart, item, amount);
     CU_ASSERT_EQUAL(cart_amount(cart, item), amount);
     cart_remove(cart, item, amount - 1);
     CU_ASSERT_EQUAL(cart_amount(cart, item), 1);
 
     cart_destroy(cart);
-    free(item);
+    item_destroy(item);
 
 }
 
@@ -100,14 +101,14 @@ void test_cart_remove_none()
     char *name = "car", *desc = "a fast car";
     size_t price = 99, amount = 2; 
 
-    cart_t *cart = cart_create();
+    cart_t *cart = cart_create(1);
 
-    item_t *item = create_item(name, desc, price);
+    item_t *item = item_create(strdup(name), strdup(desc), price);;
 
     CU_ASSERT_FALSE(cart_remove(cart, item, amount))
 
     cart_destroy(cart);
-    free(item);
+    item_destroy(item);
 }
 
 // ---------------------------------------------------------
@@ -120,14 +121,13 @@ void test_cart_get_items()
     char *names[] = {"monkey", "ape", "orangutan", "chimp", "human", "neanderthal"};
     char *order[] = {"ape", "chimp", "human", "monkey", "neanderthal", "orangutan"};
     char *desc[] = {"desc1", "desc2", "desc3", "desc4", "desc5", "desc6"};
-    item_t *items[item_amount];
     size_t price = 99, amount = 2; 
 
-    cart_t *cart = cart_create();
+    cart_t *cart = cart_create(1);
 
     for(int i = 0; i < item_amount; i++)
     {
-        item_t *item = create_item(names[i], desc[i], price);
+        item_t *item = item_create(strdup(names[i]), strdup(desc[i]), price);
 
         cart_add(cart, item, amount);
     }
@@ -145,7 +145,7 @@ void test_cart_get_items()
             CU_ASSERT_EQUAL(strcmp(item_name(item), order[index]), 0);
             index++;
 
-            free(item);
+            item_destroy(item);
         }
     ioopm_list_iterator_destroy(it);
     ioopm_list_destroy(item_list);

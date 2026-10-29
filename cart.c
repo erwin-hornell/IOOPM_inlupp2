@@ -2,7 +2,7 @@
 #include <stdlib.h>
 
 #include "db.h"
-#include "utils.h"
+#include "generics/generics.h"
 
 #include "../IOOPM_inlupp1/hash_table.h"
 #include "../IOOPM_inlupp1/hash_table_iterator.h"
@@ -22,6 +22,7 @@ typedef struct cart_item cart_item_t;
 struct cart
 {
     ioopm_hash_table_t *items; // hash table: (string) name -> *cart_item
+    size_t id;
 };
 typedef struct cart cart_t;
 
@@ -43,10 +44,11 @@ void cart_item_destroy(cart_item_t *cart_item)
 }
 
 
-cart_t *cart_create()
+cart_t *cart_create(size_t id)
 {
     cart_t *cart = calloc(1, sizeof(cart_t));
     cart->items = ioopm_hash_table_create(str_hash, str_comp);
+    cart->id = id;
     return cart;
 }
 
@@ -68,6 +70,11 @@ void cart_destroy(cart_t *cart)
     free(cart);
 }
 
+
+size_t cart_id(cart_t *cart)
+{
+    return cart->id;
+}
 
 void cart_add(cart_t *cart, item_t *item, size_t amount)
 {
@@ -132,7 +139,21 @@ size_t cart_amount(cart_t *cart, item_t *item)
     }
 }
 
-
+size_t cart_cost(cart_t *cart)
+{
+    // lookup item
+    size_t cost = 0;
+    ioopm_hash_table_iterator_t *it;
+    for (it = ioopm_hash_table_iterator_create(cart->items);
+        !ioopm_hash_table_iterator_at_end(it);
+        ioopm_hash_table_iterator_advance(it))
+        {
+            cart_item_t *cart_item = ioopm_hash_table_iterator_current_value(it).p;
+            cost += cart_item->amount * item_price(cart_item->item);
+        }
+    ioopm_hash_table_iterator_destroy(it);
+    return cost;
+}
 
 ioopm_list_t *cart_items(cart_t *cart)
 {
