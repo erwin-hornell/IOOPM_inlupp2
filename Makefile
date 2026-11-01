@@ -5,14 +5,17 @@ LDLIBS = -lcunit
 VALGRIND = valgrind --leak-check=full
 GDB = gdb
 
+SHOP = db.c cart.c shop.c
 PROF_DEST = ./tests/prof
 TARGET_db = db_tests
 TARGET_cart = cart_tests
+TARGET_shop = shop_tests
 UTILS = utils/utils.c
 STR_UTILS = utils/string_utils.c
 GENERICS = ./generics/generics.c
 TESTS_DB = tests/db_tests.c
 TESTS_CART = tests/cart_tests.c
+TESTS_SHOP = tests/shop_tests.c
 
 IOOPM_SRC = ../IOOPM_inlupp1/hash_table.c ../IOOPM_inlupp1/linked_list.c
 
@@ -44,6 +47,19 @@ valgrind-cart: $(TARGET_cart)
 
 gdb-cart: $(TARGET_cart)
 	$(GDB) ./$(PROF_DEST)/$(TARGET_cart)
+
+# shop tests
+$(TARGET_shop): $(SHOP) $(TESTS_SHOP) $(IOOPM_SRC) $(GENERICS) | $(PROF_DEST)
+	$(CC) $(CFLAGS) --coverage $^ -o $(PROF_DEST)/$@ $(LDLIBS)
+
+tests-shop: $(TARGET_shop)
+	./$(PROF_DEST)/$(TARGET_shop)
+
+valgrind-shop: $(TARGET_shop)
+	$(VALGRIND) ./$(PROF_DEST)/$(TARGET_shop)
+
+gdb-shop: $(TARGET_shop)
+	$(GDB) ./$(PROF_DEST)/$(TARGET_shop)
 
 clean:
 	rm -f $(TARGET_db) $(TARGET_cart) *.gcda *.gcno *.gcov

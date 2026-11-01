@@ -24,7 +24,7 @@ size_t cart_item_amount(cart_item_t *cart_item);
 /// @brief returns the item of the cart_item
 /// @param cart_item
 /// @return item type of the cart_item
-item_t cart_item_item(cart_item_t *cart_item);
+item_t *cart_item_item(cart_item_t *cart_item);
 
 /// @brief creates a cart
 /// @param id of the cart
@@ -49,6 +49,12 @@ size_t cart_id(cart_t *cart);
 /// @return boolean representing if merch was sucessfully added to cart
 /// @note ensure add is valid before calling, does not take ownership of data
 void cart_add(cart_t *cart, item_t *item, size_t amount);
+
+/// @brief Removes an item from a cart completly
+/// @param cart to remove from
+/// @param name of item to delete
+/// @return true if removal was successfull
+bool cart_delete(cart_t *cart, char *name);
 
 
 /// @brief removes some quantity of a merch from the cart

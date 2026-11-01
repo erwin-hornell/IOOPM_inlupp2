@@ -168,9 +168,6 @@ int main(void)
         NULL);
 
     CU_add_test(suite, "create and destroy cart", test_cart_destroy);
-    CU_add_test(suite, "add one merch to cart", test_cart_destroy);
-    CU_add_test(suite, "remove all merch from cart", test_cart_remove_some);
-    CU_add_test(suite, "remove some merch from cart", test_cart_remove_all);
 
     CU_add_test(suite, "add item to cart once", test_cart_add_once);
     CU_add_test(suite, "add the same item twice", test_cart_add_existing);

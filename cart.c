@@ -76,6 +76,16 @@ size_t cart_id(cart_t *cart)
     return cart->id;
 }
 
+item_t *cart_item_item(cart_item_t *cart_item)
+{
+    return cart_item->item;
+}
+
+size_t cart_item_amount(cart_item_t *cart_item)
+{
+    return cart_item->amount;
+}
+
 void cart_add(cart_t *cart, item_t *item, size_t amount)
 {
     // lookup item
@@ -92,6 +102,16 @@ void cart_add(cart_t *cart, item_t *item, size_t amount)
     }
 }
 
+bool cart_delete(cart_t *cart, char *name)
+{
+    value_t to_remove;
+    if (!ioopm_hash_table_remove(cart->items, PTR_AS_ELEM(name), &to_remove))
+    {
+        return false;
+    }
+    cart_item_destroy(to_remove.p);
+    return true;
+}
 
 bool cart_remove(cart_t *cart, item_t *item, size_t amount)
 {
