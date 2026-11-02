@@ -4,11 +4,7 @@
 #include "cart.h"
 #include "db.h"
 #include "shop.h"
-//TODO: Fix path
-#include "hash_table.h"
-#include "hash_table_iterator.h"
-#include "linked_list.h"
-#include "linked_list_iterator.h"
+#include "utils/utils.h"
 
 struct shop 
 {
@@ -126,16 +122,22 @@ bool cart_get_all_items(shop_t *shop, size_t id, ioopm_list_t **items)
 }
 
 
-bool add_to_cart(shop_t *shop, size_t id, item_t *item, size_t amount)
+bool add_to_cart(shop_t *shop, size_t id, char *name, size_t amount)
 {
 
 
-    value_t res;
-    if(!ioopm_hash_table_lookup(shop->carts, INT_AS_ELEM(id), &res))
+    value_t cart_res;
+    value_t item_res;
+    if(!ioopm_hash_table_lookup(shop->carts, INT_AS_ELEM(id), &cart_res))
     {
         return false;
     }
-    cart_t *cart = res.p;
+    if(!ioopm_hash_table_lookup(shop->db, PTR_AS_ELEM(name), &item_res))
+    {
+        return false;
+    }
+    cart_t *cart = cart_res.p;
+    item_t *item = item_res.p;
     cart_add(cart, item, amount);
     return true;
 }
