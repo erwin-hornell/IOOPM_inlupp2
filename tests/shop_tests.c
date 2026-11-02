@@ -316,18 +316,15 @@ void test_add_to_cart()
     shop_t *shop = shop_create();
     CU_ASSERT_PTR_NOT_NULL_FATAL(shop);
 
-    item_t *item = item_create("biden", "usa president", 1812);
-
     new_cart(shop);
     new_cart(shop);
     // add stuff
-    CU_ASSERT_TRUE(add_to_cart(shop, 0, item, 2));
-    CU_ASSERT_TRUE(add_to_cart(shop, 1, item, 99));
+    add_to_db(shop, "the item", "its the item", 100);
+    CU_ASSERT_TRUE(add_to_cart(shop, 0, "the item", 2));
+    CU_ASSERT_TRUE(add_to_cart(shop, 1, "the item", 99));
     // add it again
-    CU_ASSERT_TRUE(add_to_cart(shop, 0, item, 3));
+    CU_ASSERT_TRUE(add_to_cart(shop, 0, "the item", 3));
 
-    // memory cleanup
-    free(item);
     shop_destroy(shop);
 }
 
@@ -339,27 +336,25 @@ void test_remove_from_cart()
     shop_t *shop = shop_create();
     CU_ASSERT_PTR_NOT_NULL_FATAL(shop);
 
-    item_t *item = item_create("biden", "usa president", 1812);
+    add_to_db(shop, "item", "item the", 14);
 
     // remove invalid (not added)
-    CU_ASSERT_FALSE(remove_from_cart(shop, 0, item, 3));
+    CU_ASSERT_FALSE(remove_from_cart(shop, 0, "the item", 3));
 
     new_cart(shop);
     // remove valid
-    CU_ASSERT_TRUE(add_to_cart(shop, 0, item, 2));
-    CU_ASSERT_TRUE(remove_from_cart(shop, 0, item, 1));
+    CU_ASSERT_TRUE(add_to_cart(shop, 0, "the item", 2));
+    CU_ASSERT_TRUE(remove_from_cart(shop, 0, "the item", 1));
 
     new_cart(shop);
-    // remove invalid (particular cart wrong amount)
-    CU_ASSERT_FALSE(remove_from_cart(shop, 1, item, 1));
+    // remove invalid (cart 1 wrong amount)
+    CU_ASSERT_FALSE(remove_from_cart(shop, 1, "the item", 1));
 
     new_cart(shop);
     // remove too much
-    CU_ASSERT_TRUE(add_to_cart(shop, 2, item, 1));
-    CU_ASSERT_FALSE(remove_from_cart(shop, 2, item, 2));
+    CU_ASSERT_TRUE(add_to_cart(shop, 2, "the item", 1));
+    CU_ASSERT_FALSE(remove_from_cart(shop, 2, "the item", 2));
 
-    // memory cleanup
-    free(item);
     shop_destroy(shop);
 }
 
@@ -382,18 +377,17 @@ void test_list_cart()
     ioopm_list_destroy(items);
 
     // add one to cart
-    item_t *item = item_create("biden", "usa president", 1812);
+    add_to_db(shop, "car", "goes fast", 10000);
 
-    CU_ASSERT_TRUE(add_to_cart(shop, 0, item, 1));
+    CU_ASSERT_TRUE(add_to_cart(shop, 0, "car", 1));
     CU_ASSERT_TRUE_FATAL(cart_get_all_items(shop, 0, &items));
 
     item_t *item_from_list = ioopm_list_head(items).p;
-    CU_ASSERT_STRING_EQUAL(item_name(item_from_list), "biden");
+    CU_ASSERT_STRING_EQUAL(item_name(item_from_list), "car");
     ioopm_list_destroy(items);
 
     // TOFIX: add multiple to cart
-    
-    free(item);
+
     shop_destroy(shop);
 }
 
@@ -417,7 +411,6 @@ void test_shop_checkout_valid()
     CU_ASSERT_PTR_NOT_NULL_FATAL(shop);
 
     // add items to shop database
-    item_t *item = item_create("pc", "you can game", 2000);
     add_to_db(shop, "pc", "you can game", 2000);
 
     db_replenish(shop, "pc", "A01", 4);
@@ -426,14 +419,13 @@ void test_shop_checkout_valid()
     new_cart(shop);
     new_cart(shop);
 
-       (shop, 0, item, 2);
-    add_to_cart(shop, 1, item, 2);
+    add_to_cart(shop, 0, "pc", 2);
+    add_to_cart(shop, 1, "pc", 2);
 
     // checkout carts
     CU_ASSERT_TRUE(checkout_cart(shop, 0));
     CU_ASSERT_TRUE(checkout_cart(shop, 1));
-    
-    free(item);
+
     shop_destroy(shop);
 }
 
@@ -443,23 +435,21 @@ void test_shop_checkout_invalid()
     CU_ASSERT_PTR_NOT_NULL_FATAL(shop);
 
     // add items to shop database
-    item_t *item = item_create("pc", "you can game", 2000);
     add_to_db(shop, "pc", "you can game", 2000);
 
     db_replenish(shop, "pc", "A01", 3);
 
-    // add items to carts
+    // create carts and add items
     new_cart(shop);
     new_cart(shop);
 
-    add_to_cart(shop, 0, item, 2);
-    add_to_cart(shop, 1, item, 2);
+    add_to_cart(shop, 0, "pc", 2);
+    add_to_cart(shop, 1, "pc", 2);
 
     // checkout carts
     CU_ASSERT_TRUE(checkout_cart(shop, 0));
     CU_ASSERT_FALSE(checkout_cart(shop, 1));
-    
-    free(item);
+
     shop_destroy(shop);
 }
 
