@@ -88,7 +88,7 @@ bool cart_get_all_items(shop_t *shop, size_t id, ioopm_list_t **items);
 /// @param item to be added
 /// @param amount to add
 /// @return true if addition was successful
-bool add_to_cart(shop_t *shop, size_t id, item_t *item, size_t amount);
+bool add_to_cart(shop_t *shop, size_t id, char *name, size_t amount);
 
 /// @brief removes an amount of an item from a cart
 /// @param shop 
