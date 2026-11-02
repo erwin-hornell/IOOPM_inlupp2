@@ -197,8 +197,7 @@ void test_shop_get_merch_locs(void)
 
         if (i < 3)
         {
-            printf("\nLOC: %s / EXPECTED: %s\n", loc, expected[i]);
-            CU_ASSERT_STRING_EQUAL(loc, expected[i]);
+            CU_ASSERT_STRING_EQUAL(shelf_name(loc), expected[i]);
         }
 
         i++;

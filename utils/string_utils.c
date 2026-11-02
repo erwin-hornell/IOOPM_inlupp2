@@ -5,6 +5,8 @@
 #include <string.h>
 #include <ctype.h>
 
+
+
 extern char *strdup(const char *);
 
 void print(char *str)
@@ -18,7 +20,7 @@ void print(char *str)
 void println(char *str)
 {
     print(str);
-    putchar('\n');
+    //putchar('\n');
 }
 
 bool not_empty(char *str)
@@ -70,6 +72,17 @@ answer_t make_float(char *str)
     return (answer_t){.float_value = atof(str)};
 }
 
+bool is_char(char *str)
+{
+    return strlen(str) == 1;
+}
+
+answer_t to_char(char *str)
+{
+    return (answer_t){.char_value = str[0]};
+}
+
+
 void clear_input_buffer()
 {
     int c;
@@ -119,6 +132,12 @@ char *ask_question_string(char *question)
 {
     return ask_question(question, not_empty, (convert_func *)strdup).string_value;
 }
+
+char ask_question_char(char *question)
+{
+    return ask_question(question, is_char, to_char).char_value;
+}
+
 
 float ask_question_float(char *question)
 {

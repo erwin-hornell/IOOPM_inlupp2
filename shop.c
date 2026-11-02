@@ -127,17 +127,16 @@ bool add_to_cart(shop_t *shop, size_t id, char *name, size_t amount)
 
 
     value_t cart_res;
-    value_t item_res;
+    item_t *item;
     if(!ioopm_hash_table_lookup(shop->carts, INT_AS_ELEM(id), &cart_res))
     {
         return false;
     }
-    if(!ioopm_hash_table_lookup(shop->db, PTR_AS_ELEM(name), &item_res))
+    if(!get_merch(shop->db, name, &item))
     {
         return false;
     }
     cart_t *cart = cart_res.p;
-    item_t *item = item_res.p;
     cart_add(cart, item, amount);
     return true;
 }
