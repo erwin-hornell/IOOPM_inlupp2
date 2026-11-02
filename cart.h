@@ -6,12 +6,6 @@
 #include "generics/generics.h"
 
 
-#include "../IOOPM_inlupp1/hash_table.h"
-#include "../IOOPM_inlupp1/hash_table_iterator.h"
-
-#include "../IOOPM_inlupp1/linked_list.h"
-#include "../IOOPM_inlupp1/linked_list_iterator.h"
-
 typedef struct cart cart_t;
 //leak cart_item to shop so that checkout logics can work
 typedef struct cart_item cart_item_t;

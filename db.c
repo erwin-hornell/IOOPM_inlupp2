@@ -3,11 +3,7 @@
 #include <string.h>
 #include "db.h"
 #include "generics/generics.h"
-//TODO: Fix path
-#include "hash_table.h"
-#include "hash_table_iterator.h"
-#include "linked_list.h"
-#include "linked_list_iterator.h"
+#include "utils/utils.h"
 
 
 

@@ -12,6 +12,7 @@ TARGET_cart = cart_tests
 TARGET_shop = shop_tests
 UTILS = utils/utils.c
 STR_UTILS = utils/string_utils.c
+
 GENERICS = ./generics/generics.c
 TESTS_DB = tests/db_tests.c
 TESTS_CART = tests/cart_tests.c
@@ -60,6 +61,12 @@ valgrind-shop: $(TARGET_shop)
 
 gdb-shop: $(TARGET_shop)
 	$(GDB) ./$(PROF_DEST)/$(TARGET_shop)
+
+
+
+run: main.c user_UI.c $(SHOP) $(IOOPM_SRC) $(GENERICS) $(UTILS) $(STR_UTILS)
+	$(CC) $^ -o ./src/main
+	./src/main
 
 clean:
 	rm -f $(TARGET_db) $(TARGET_cart) *.gcda *.gcno *.gcov

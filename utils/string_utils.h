@@ -4,6 +4,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+
+
 /*
 * TODO description
 */
@@ -12,6 +14,7 @@ typedef union
     int int_value;
     float float_value;
     char *string_value;
+    char char_value;
 } answer_t;
 /*
 * TODO description
@@ -26,7 +29,13 @@ int ask_question_int(char *question);
 /*
 * TODO description
 */
+char ask_question_char(char *question);
+/*
+* TODO description
+*/
 char *ask_question_string(char *question);
+
+
 /*
 * TODO description
 */
