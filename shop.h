@@ -53,9 +53,9 @@ ioopm_list_t *list_db(shop_t *shop);
 /// @brief returns all locations whare an item is stored
 /// @param shop a shop
 /// @param name item name
-/// @return a linked list of strings representing locations where the given item is stored
-/// @note ownership of list is inherited upon creation
-ioopm_list_t *get_merch_locs(shop_t *shop, char *name);
+/// @param locs double pointer to point to list of locations
+/// @return bool representing if lookup was succesful (there was any merch of the given name)
+bool get_merch_locs(shop_t *shop, char *name, ioopm_list_t **locs);
 
 /// @brief adds increases the amount stored at a location or adds a new location to an item
 /// @param shop 

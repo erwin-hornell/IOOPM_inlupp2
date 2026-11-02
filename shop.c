@@ -78,12 +78,9 @@ ioopm_list_t *list_db(shop_t *shop)
     return get_all_items(shop->db);
 }
 
-ioopm_list_t *get_merch_locs(shop_t *shop, char *name)
+bool get_merch_locs(shop_t *shop, char *name, ioopm_list_t **locs)
 {
-    ioopm_list_t *locs;
-    get_locs(shop->db, name, &locs);
-
-    return locs;
+    return get_locs(shop->db, name, locs);
 }
 
 bool db_replenish(shop_t *shop, char *name, char *loc, size_t amount)
@@ -156,13 +153,14 @@ bool can_checkout(shop_t *shop, size_t id)
     value_t res;
     if(!ioopm_hash_table_lookup(shop->carts, INT_AS_ELEM(id), &res))
     {
-        return 0;
+        return false;
     }
     cart_t *cart = res.p;
 
 
     ioopm_list_iterator_t *it;
-    for(it = ioopm_list_iterator_create(cart_items(cart));
+    ioopm_list_t *items = cart_items(cart);
+    for(it = ioopm_list_iterator_create(items);
         !ioopm_list_iterator_at_end(it);
         ioopm_list_iterator_advance(it))
     {
@@ -178,6 +176,7 @@ bool can_checkout(shop_t *shop, size_t id)
             }
     }
     ioopm_list_iterator_destroy(it);
+    ioopm_list_destroy(items);
     return true;
 }
 
@@ -196,7 +195,8 @@ bool checkout_cart(shop_t *shop, size_t id)
     cart_t *cart = res.p;
 
     ioopm_list_iterator_t *it;
-    for(it = ioopm_list_iterator_create(cart_items(cart));
+    ioopm_list_t *items = cart_items(cart);
+    for(it = ioopm_list_iterator_create(items);
         !ioopm_list_iterator_at_end(it);
         ioopm_list_iterator_advance(it))
     {
@@ -211,6 +211,7 @@ bool checkout_cart(shop_t *shop, size_t id)
             }
     }
     ioopm_list_iterator_destroy(it);
+    ioopm_list_destroy(items);
     ioopm_hash_table_remove(shop->carts, INT_AS_ELEM(id), &res);
     cart_destroy(res.p);
     return true;

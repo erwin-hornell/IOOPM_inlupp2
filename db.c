@@ -185,7 +185,7 @@ bool add_stock(db_t *db, char *name, char *loca, size_t amount)
     return true;
 }
 
-// takes db name of merch and returns sets locs to the relevents merch's list of locations
+// takes db name of merch and returns sets locs to the relevents merch's list of locations (strings)
 bool get_locs(db_t *db, char *name, ioopm_list_t **locs)
 {
     value_t res;
