@@ -2,11 +2,13 @@
 #include "generics.h"
 #include <string.h>
 // hash table
-#include "../IOOPM_inlupp1/hash_table.h"
-#include "../IOOPM_inlupp1/hash_table_iterator.h"
+#include "../../IOOPM_inlupp1/hash_table.h"
+#include "../../IOOPM_inlupp1/hash_table_iterator.h"
 // linked list
-#include "../IOOPM_inlupp1/linked_list.h"
-#include "../IOOPM_inlupp1/linked_list_iterator.h"
+#include "../../IOOPM_inlupp1/linked_list.h"
+#include "../../IOOPM_inlupp1/linked_list_iterator.h"
+
+
 
 struct item
 {
@@ -84,6 +86,42 @@ void insert_in_order(item_t *to_insert, ioopm_list_t *list)
     ioopm_list_iterator_destroy(list_it);
 }
 
+
+
+struct shelf
+{
+    char *name;
+    size_t amount;
+};
+
+shelf_t *shelf_create(char *name, size_t amount)
+{
+    shelf_t *shelf = calloc(1, sizeof(shelf_t));
+    shelf->name = name;
+    shelf->amount = amount;
+    return shelf;
+}
+
+void shelf_destroy(shelf_t *shelf)
+{
+    free(shelf->name);
+    free(shelf);
+}
+
+char *shelf_name(shelf_t *shelf)
+{
+    return shelf->name;
+}
+size_t shelf_amount(shelf_t *shelf)
+{
+    return shelf->amount;
+}
+void shelf_amount_set(shelf_t *shelf, size_t amount) {
+    shelf->amount = amount;
+}
+void shelf_amount_add(shelf_t *shelf, size_t addend) {
+    shelf->amount += addend;
+}
 
 
 size_t int_hash(const value_t key)

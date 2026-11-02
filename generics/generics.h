@@ -1,10 +1,10 @@
 #pragma once
 // hash table
-#include "../IOOPM_inlupp1/hash_table.h"
-#include "../IOOPM_inlupp1/hash_table_iterator.h"
+#include "../../IOOPM_inlupp1/hash_table.h"
+#include "../../IOOPM_inlupp1/hash_table_iterator.h"
 // linked list
-#include "../IOOPM_inlupp1/linked_list.h"
-#include "../IOOPM_inlupp1/linked_list_iterator.h"
+#include "../../IOOPM_inlupp1/linked_list.h"
+#include "../../IOOPM_inlupp1/linked_list_iterator.h"
 
 typedef struct item item_t;
 
@@ -41,6 +41,23 @@ void item_update_price(item_t *item, int new_price);
 
 void insert_in_order(item_t *to_insert, ioopm_list_t *list);
 
+
+
+//TODO: add description
+typedef struct shelf shelf_t;
+
+shelf_t *shelf_create(char *name, size_t amount);
+
+void shelf_destroy(shelf_t *shelf);
+
+char *shelf_name(shelf_t *shelf);
+size_t shelf_amount(shelf_t *shelf);
+void shelf_amount_set(shelf_t *shelf, size_t amount);
+void shelf_amount_add(shelf_t *shelf, size_t addend);
+
+
+
+//TODO: add description
 size_t int_hash(const value_t key);
 
 bool int_comp(const value_t a, const value_t b);

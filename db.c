@@ -15,37 +15,16 @@
 struct db_merch
 {
     item_t *item;
-    ioopm_list_t *locs;
+    ioopm_list_t *locs; // list of shelf_t
 };
 
 typedef struct db_merch db_merch_t;
-
-struct  shelf
-{
-    char *name;
-    size_t amount;
-};
-typedef struct shelf shelf_t;
 
 
 struct db
 {
     ioopm_hash_table_t *merch; // name -> merch;
 };
-
-shelf_t *create_shelf(char *name, size_t amount)
-{
-    shelf_t *shelf = calloc(1, sizeof(shelf_t));
-    shelf->name = name;
-    shelf->amount = amount;
-    return shelf;
-}
-
-void destroy_shelf(shelf_t *shelf)
-{
-    free(shelf->name);
-    free(shelf);
-}
 
 void destroy_merch(db_merch_t *merch)
 {
@@ -57,7 +36,7 @@ void destroy_merch(db_merch_t *merch)
         ioopm_list_iterator_advance(it))
         {
             shelf_t *shelf = ioopm_list_iterator_current(it).p;
-            destroy_shelf(shelf);
+            shelf_destroy(shelf);
         }
     ioopm_list_iterator_destroy(it);
     
@@ -175,7 +154,7 @@ bool is_on_shelf(db_merch_t *merch, char *loc_name, shelf_t **res)
         ioopm_list_iterator_advance(it))
         {
             shelf_t *shelf = ioopm_list_iterator_current(it).p;
-            if(strcmp(loc_name, shelf->name) == 0)
+            if(strcmp(loc_name, shelf_name(shelf)) == 0)
             {
                 ioopm_list_iterator_destroy(it);
                 *res = shelf;
@@ -198,10 +177,10 @@ bool add_stock(db_t *db, char *name, char *loca, size_t amount)
     shelf_t *shelf;
     if(is_on_shelf(merch, loca, &shelf))
     {
-        shelf->amount += amount;
+        shelf_amount_add(shelf, amount);
         return true;
     }
-    shelf = create_shelf(strdup(loca), amount);
+    shelf = shelf_create(strdup(loca), amount);
     ioopm_list_append(merch->locs, PTR_AS_ELEM(shelf));
     return true;
 }
@@ -233,7 +212,7 @@ bool get_stock(db_t *db, char *name, size_t *res)
         ioopm_list_iterator_advance(it))
     {
         shelf_t *shelf = ioopm_list_iterator_current(it).p;
-        stock += shelf->amount;
+        stock += shelf_amount(shelf);
     }
     ioopm_list_iterator_destroy(it);
     *res = stock;
@@ -263,13 +242,13 @@ bool remove_stock(db_t *db, char *name, size_t amount)
         ioopm_list_iterator_advance(it))
     {
         shelf_t *shelf = ioopm_list_iterator_current(it).p;
-        if(shelf->amount > amount)
+        if(shelf_amount(shelf) > amount)
         {
-            shelf->amount -= amount;
+            shelf_amount_add(shelf, -amount);
         }
         else
         {
-            amount -= shelf->amount;
+            amount -= shelf_amount(shelf);
             ioopm_list_iterator_remove(it);
         }
     }

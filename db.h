@@ -66,10 +66,10 @@ bool get_merch(db_t *db, char *name, item_t **res);
 bool add_stock(db_t *db, char *name, char *loca, size_t amount);
 
 
-/// @brief where (shelfs) a given ware is stored
+/// @brief where (shelf_t) a given ware is stored
 /// @param db database to look in
 /// @param name a ware's name
-/// @param locs becomes list of shelfs where the ware is stored
+/// @param locs is set to list of shelf_t where the ware is stored
 /// @return boolean representing if ware label was valid (present in database)
 /// @note does not take ownership of data
 bool get_locs(db_t *db, char *name, ioopm_list_t **locs);

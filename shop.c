@@ -82,6 +82,7 @@ ioopm_list_t *get_merch_locs(shop_t *shop, char *name)
 {
     ioopm_list_t *locs;
     get_locs(shop->db, name, &locs);
+
     return locs;
 }
 

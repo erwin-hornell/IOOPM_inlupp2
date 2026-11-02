@@ -51,9 +51,10 @@ bool edit_item(shop_t *shop, char *name, char *new_name, char *new_desc, size_t 
 ioopm_list_t *list_db(shop_t *shop);
 
 /// @brief returns all locations whare an item is stored
-/// @param shop 
-/// @param name of item
-/// @return a linked list of locations
+/// @param shop a shop
+/// @param name item name
+/// @return a linked list of strings representing locations where the given item is stored
+/// @note ownership of list is inherited upon creation
 ioopm_list_t *get_merch_locs(shop_t *shop, char *name);
 
 /// @brief adds increases the amount stored at a location or adds a new location to an item

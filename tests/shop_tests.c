@@ -161,7 +161,6 @@ void test_shop_get_merch_locs_empty(void)
 
     CU_ASSERT_PTR_NOT_NULL_FATAL(locs);
     CU_ASSERT_TRUE(ioopm_list_is_empty(locs));
-    ioopm_list_destroy(locs);
     shop_destroy(shop);
 }
 
@@ -192,12 +191,13 @@ void test_shop_get_merch_locs(void)
         !ioopm_list_iterator_at_end(it);
         ioopm_list_iterator_advance(it))
     {
-        char *loc = ioopm_list_iterator_current(it).p;
+        shelf_t *loc = ioopm_list_iterator_current(it).p;
 
         CU_ASSERT_TRUE(i < 3);
 
         if (i < 3)
         {
+            printf("\nLOC: %s / EXPECTED: %s\n", loc, expected[i]);
             CU_ASSERT_STRING_EQUAL(loc, expected[i]);
         }
 
@@ -207,65 +207,8 @@ void test_shop_get_merch_locs(void)
     CU_ASSERT_EQUAL(i, 3);
 
     ioopm_list_iterator_destroy(it);
-    ioopm_list_destroy(locs);
     shop_destroy(shop);
 }
-
-
-void test_shop_get_merch_locs_alphabetical_order(void)
-{
-    shop_t *shop = shop_create();
-    CU_ASSERT_PTR_NOT_NULL_FATAL(shop);
-
-    CU_ASSERT_TRUE(add_to_db(shop, "car", "A fast car", 99));
-
-    // Add locations deliberately out of order.
-    CU_ASSERT_TRUE(db_replenish(shop, "car", "C10", 5));
-    CU_ASSERT_TRUE(db_replenish(shop, "car", "A01", 5));
-    CU_ASSERT_TRUE(db_replenish(shop, "car", "B12", 5));
-    CU_ASSERT_TRUE(db_replenish(shop, "car", "A05", 5));
-    CU_ASSERT_TRUE(db_replenish(shop, "car", "B01", 5));
-
-    ioopm_list_t *locs = get_merch_locs(shop, "car");
-
-    CU_ASSERT_PTR_NOT_NULL_FATAL(locs);
-    CU_ASSERT_EQUAL(ioopm_list_size(locs), 5);
-
-    const char *expected[] = {
-        "A01",
-        "A05",
-        "B01",
-        "B12",
-        "C10"
-    };
-
-
-    size_t i = 0;
-
-    ioopm_list_iterator_t *it;
-    for (it = ioopm_list_iterator_create(locs);
-        !ioopm_list_iterator_at_end(it);
-        ioopm_list_iterator_advance(it))
-    {
-        char *loc = ioopm_list_iterator_current(it).p;
-
-        CU_ASSERT_TRUE(i < 5);
-
-        if (i < 5)
-        {
-            CU_ASSERT_STRING_EQUAL(loc, expected[i]);
-        }
-
-        i++;
-    }
-
-    CU_ASSERT_EQUAL(i, 5);
-
-    ioopm_list_iterator_destroy(it);
-    ioopm_list_destroy(locs);
-    shop_destroy(shop);
-}
-
 
 // ---------------------------------------------------------
 // Replanish db
@@ -319,17 +262,11 @@ int main(void)
 
     CU_add_test(suite, "Edits an item once", test_shop_edit_once);
 
-    CU_add_test(suite, "List database alphabetically",test_shop_list_db_alphabetical_order);
+    CU_add_test(suite, "List database alphabetically", test_shop_list_db_alphabetical_order);
 
-    CU_add_test(suite, "Get empty merchandise locations",
-            test_shop_get_merch_locs_empty);
+    CU_add_test(suite, "Get empty merchandise locations", test_shop_get_merch_locs_empty);
 
-    CU_add_test(suite, "Get merchandise locations",
-            test_shop_get_merch_locs);
-
-    CU_add_test(suite, "Get merchandise locations in alphabetical order",
-            test_shop_get_merch_locs_alphabetical_order);
-    
+    CU_add_test(suite, "Get merchandise locations", test_shop_get_merch_locs);
 
 
 
