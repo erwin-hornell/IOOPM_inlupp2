@@ -106,6 +106,26 @@ bool remove_cart(shop_t *shop, size_t id)
     return true;
 }
 
+ioopm_list_t *get_carts(shop_t *shop)
+{
+    ioopm_list_t *carts = ioopm_list_create();
+    ioopm_hash_table_iterator_t *it;
+    for(it = ioopm_hash_table_iterator_create(shop->carts);
+        !ioopm_hash_table_iterator_at_end(it);
+        ioopm_hash_table_iterator_advance(it))
+    {
+        cart_t *cart = ioopm_hash_table_iterator_current_value(it).p;
+        ioopm_list_append(carts, INT_AS_ELEM(cart_id(cart)));
+    }
+    ioopm_hash_table_iterator_destroy(it);
+    return carts;
+}
+
+bool has_cart(shop_t *shop, size_t id)
+{
+    return ioopm_hash_table_has_key(shop->carts, INT_AS_ELEM(id));
+}
+
 bool cart_get_all_items(shop_t *shop, size_t id, ioopm_list_t **items)
 {
     value_t res;
@@ -147,6 +167,31 @@ bool remove_from_cart(shop_t *shop, size_t id, item_t *item, size_t amount)
     }
     cart_t *cart = res.p;
     return cart_remove(cart, item, amount);
+}
+
+bool cart_total_cost(shop_t *shop, size_t id, size_t *total_cost)
+{
+    value_t res;
+    if(!ioopm_hash_table_lookup(shop->carts, INT_AS_ELEM(id), &res))
+    {
+        return false;
+    }
+    cart_t *cart = res.p;
+    *total_cost = 0;
+
+    ioopm_list_iterator_t *it;
+    ioopm_list_t *items = cart_items(cart);
+    for(it = ioopm_list_iterator_create(items);
+        !ioopm_list_iterator_at_end(it);
+        ioopm_list_iterator_advance(it))
+    {
+        item_t *item = ioopm_list_iterator_current(it).p;
+        size_t amount = cart_amount(cart, item);
+        *total_cost += amount * item_price(item);
+    }
+    ioopm_list_iterator_destroy(it);
+    ioopm_list_destroy(items);
+    return true;
 }
 
 bool can_checkout(shop_t *shop, size_t id)

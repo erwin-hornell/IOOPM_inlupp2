@@ -22,6 +22,8 @@ typedef union
 typedef bool check_func(char *);
 typedef answer_t convert_func(char *);
 
+
+void clear_input_buffer();
 /*
 * TODO description
 */

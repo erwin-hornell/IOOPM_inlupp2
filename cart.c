@@ -175,6 +175,9 @@ size_t cart_cost(cart_t *cart)
     return cost;
 }
 
+
+
+
 ioopm_list_t *cart_items(cart_t *cart)
 {
     ioopm_list_t *ls = ioopm_list_create();

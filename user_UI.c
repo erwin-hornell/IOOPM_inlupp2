@@ -1,26 +1,40 @@
 #include <string.h>
+#include <ctype.h>
 #include <stdio.h>
 #include "utils/utils.h"
 #include "utils/string_utils.h"
 #include "shop.h"
+#include <stdlib.h>
 
-
-void start_menu(char *header)
+void new_menu(char *header)
 {
-    char buff[255];
-    for(int i = 0; i < strlen(header)+2*9; i++)
+    int len = strlen(header)+(2*9);
+    char buff[len];
+    for(int i = 0; i < len; i++)
     {
         buff[i] = '-';
     }
-    buff[strlen(buff)-1] = '\0';
     printf("\n\n"
-            "%s\n"
+            "%.*s\n"
             "\t %s\n"
-            "%s\n",
-            buff,
+            "%.*s\n",
+            len, buff,
             header,
-            buff);
+            len, buff);
 }
+
+bool is_shelf(char *str)
+{
+    return isupper((unsigned char)str[0]) &&
+           isdigit((unsigned char)str[1]) &&
+           isdigit((unsigned char)str[2]) &&
+           str[3] == '\0';
+}
+
+char *ask_question_shelf(char *question){
+    return ask_question(question, is_shelf, (convert_func *)strdup).string_value;
+}
+
 
 void print_suc(bool suc)
 {
@@ -34,7 +48,7 @@ void print_suc(bool suc)
     }
 }
 
-void print_items(ioopm_list_t *items)
+int print_items(ioopm_list_t *items)
 {
     int index = 1;
     ioopm_list_iterator_t *it;
@@ -51,11 +65,112 @@ void print_items(ioopm_list_t *items)
             index++;
         }
     ioopm_list_iterator_destroy(it);
+    if(index == 1)
+    {
+        printf("No items in database");
+    }
+    return index;
 }
+
+int print_carts(ioopm_list_t *carts)
+{
+    int index = 1;
+    ioopm_list_iterator_t *it;
+    for(it = ioopm_list_iterator_create(carts);
+        !ioopm_list_iterator_at_end(it);
+        ioopm_list_iterator_advance(it))
+        {
+            int id = ioopm_list_iterator_current(it).i;
+            printf("%d: cart_%d \n",
+                    index,
+                    id);
+            index++;
+        }
+    ioopm_list_iterator_destroy(it);
+    if(index == 1)
+    {
+        printf("No carts in shop");
+    }
+    return index;
+}
+
+
+void print_locations(ioopm_list_t *locs, item_t *item)
+{
+    int index = 1;
+
+    printf("Stock of %s: \n", item_name(item));
+
+    ioopm_list_iterator_t *it;
+    for(it = ioopm_list_iterator_create(locs);
+        !ioopm_list_iterator_at_end(it);
+        ioopm_list_iterator_advance(it))
+        {
+            shelf_t *shelf = ioopm_list_iterator_current(it).p;
+            printf("%d: shelf: %s \t amount: %d \n",
+                    index,
+                    shelf_name(shelf),
+                    (int)shelf_amount(shelf));
+            index++;
+        }
+    ioopm_list_iterator_destroy(it);
+    if(index == 1)
+    {
+        printf("Item not in stock");
+    }
+}
+
+bool try_ask_item(shop_t *shop, item_t **item)
+{
+    ioopm_list_t *items = list_db(shop);
+    int index;
+    int count;
+    do{
+        count = print_items(items);
+        index = ask_question_int("Selcet index or enter 0 to return: ");
+        if(index == 0)
+        {
+            ioopm_list_destroy(items);
+            return false;
+        }
+    } while (index > count || index < 0);
+
+    *item = ioopm_list_get(items, index - 1).p;
+
+    ioopm_list_destroy(items);
+
+    return true;
+}
+
+bool try_ask_cart(shop_t *shop, int *id)
+{
+    ioopm_list_t *carts = get_carts(shop);
+    int index;
+    int count;
+    do{
+        count = print_carts(carts);
+        index = ask_question_int("Selcet index or enter 0 to return: ");
+        if(index == 0)
+        {
+            ioopm_list_destroy(carts);
+            return false;
+        }
+            
+        
+    } while (index < 0 || index > count);
+    *id = ioopm_list_get(carts, index - 1).i;
+    ioopm_list_destroy(carts);
+
+    return true;
+    
+}
+
+
+
 
 char menu_main(shop_t *shop)
 {
-    start_menu("MAIN MENY");
+    new_menu("MAIN MENY");
     char option = ask_question_char("        \n"
                         "A - Add item to db     \n"
                         "L - List db items      \n"
@@ -78,85 +193,164 @@ char menu_main(shop_t *shop)
 
 void menu_add_item(shop_t *shop)
 {
-    start_menu("ADD ITEM");
-    char *name = ask_question_string("name: ");
-    char *desc = ask_question_string("description: ");
+    new_menu("ADD ITEM");
+    char *name = ask_question_string("name: "); // uses strdup
+    char *desc = ask_question_string("description: ");// uses strdup
     int price = ask_question_int("price: ");
     print_suc(add_to_db(shop, name, desc, price));
-
+    free(name);
+    free(desc);
 
     
 }
 
 void menu_remove_item(shop_t *shop)
 {
-    start_menu("REMOVE ITEM");
-    ioopm_list_t *items = list_db(shop);
-    print_items(items);
-    int index = ask_question_int("Selcet index: ");
-    item_t *item = ioopm_list_get(items, index - 1).p;
+    new_menu("REMOVE ITEM");
+    item_t *item;
+    if(!try_ask_item(shop, &item))
+    {
+        return;
+    }
     print_suc(remove_from_db(shop, item_name(item)));
 }
 void menu_edit_item(shop_t *shop)
 {
-    start_menu("EDIT ITEM");
-    ioopm_list_t *items = list_db(shop);
-    print_items(items);
-    int index = ask_question_int("Selcet index: ");
-    item_t *item = ioopm_list_get(items, index - 1).p;
-    char *new_name = ask_question_string("new name: ");
-    char *new_desc = ask_question_string("new description: ");
+    new_menu("EDIT ITEM");
+    item_t *item;
+    if(!try_ask_item(shop, &item))
+    {
+        return;
+    }
+    char *new_name = ask_question_string("new name: "); // uses strdup
+    char *new_desc = ask_question_string("new description: ");// uses strdup
     int new_price = ask_question_int("new price: ");
 
-
     print_suc(edit_item(shop, item_name(item), new_name, new_desc, new_price));
+    free(new_name);
+    free(new_desc);
+
 }
 void menu_list_items(shop_t *shop)
 {
-    start_menu("LIST ITEM");
+    new_menu("LIST ITEM");
     ioopm_list_t *items = list_db(shop);
     print_items(items);
+    ioopm_list_destroy(items);
 }
 void menu_show_stock(shop_t *shop)
 {
+    new_menu("SHOW STOCK");
+    item_t *item;
+    if(!try_ask_item(shop, &item))
+    {
+        return;
+    }
+    ioopm_list_t *locs;
+    if(!get_merch_locs(shop, item_name(item), &locs))
+    {
+        printf("Could not find locations of item: %s" , item_name(item));
+    }
+    print_locations(locs, item);
     
 }
 void menu_replenish(shop_t *shop)
 {
-    
+    new_menu("REPLENISH STOCK");
+    item_t *item;
+    if(!try_ask_item(shop, &item))
+    {
+        return;
+    }
+    printf("Adding stock to %s:\n", item_name(item));
+    char *loc = ask_question_shelf("Enter shelf: ");
+    int amount = ask_question_int("Enter amount: ");
+    print_suc(db_replenish(shop, item_name(item), loc, amount));
 }
 void menu_cart_create(shop_t *shop)
 {
-    
+    new_cart(shop);
 }
 void menu_cart_remove(shop_t *shop)
 {
-    
+    new_menu("REMOVE CART");
+    int cart_id = 0;
+    if(!try_ask_cart(shop, &cart_id))
+    {
+        return;
+    }
+    print_suc(remove_cart(shop, cart_id));
 }
 void menu_cart_add_item(shop_t *shop)
 {
-    
+    new_menu("ADD ITEM TO CART");
+    int cart_id = 0;
+
+    if(!try_ask_cart(shop, &cart_id))
+        return;
+
+    item_t *item;
+
+    if(!try_ask_item(shop, &item))
+        return;
+
+    int amount = ask_question_int("Enter amount to add: ");
+    print_suc(add_to_cart(shop, cart_id, item_name(item), amount));
 }
 void menu_cart_remove_item(shop_t *shop)
 {
-    
+    new_menu("REOMVE ITEM FROM CART");
+    int cart_id = 0;
+
+    if(!try_ask_cart(shop, &cart_id))
+        return;
+
+    item_t *item;
+
+    if(!try_ask_item(shop, &item))
+        return;
+
+    int amount = ask_question_int("Enter amount to remove: ");
+    print_suc(remove_from_cart(shop, cart_id, item, amount));
 }
 void menu_cart_cost(shop_t *shop)
 {
-    
+    new_menu("TOTAL PRICE OF CART");
+    int cart_id = 0;
+
+    if(!try_ask_cart(shop, &cart_id))
+        return;
+
+    size_t total_cost;
+    if(! cart_total_cost(shop, cart_id, &total_cost))
+    {
+        printf("Somthing went wrong\n");
+    }
+    printf("The total cost of cart_%d: %d", cart_id, (int)total_cost);
+
 }
 void menu_cart_checkout(shop_t *shop)
 {
-    
+    new_menu("CHECKOUT CART");
+    int cart_id = 0;
+
+    if(!try_ask_cart(shop, &cart_id))
+        return;
+
+    print_suc(checkout_cart(shop, cart_id));
+
 }
+
 void menu_undo(shop_t *shop)
 {
     
 }
+
 void menu_save(shop_t *shop)
 {
     
 }
+
 void menu_load(shop_t *shop)
 {
     
@@ -188,7 +382,7 @@ void user_ui(shop_t *shop)
             menu_edit_item(shop);
             break;
 
-/*         case 'S':
+        case 'S':
             menu_show_stock(shop);
             break;
 
@@ -203,7 +397,6 @@ void user_ui(shop_t *shop)
         case 'R':
             menu_cart_remove(shop);
             break;
-
         case '+':
             menu_cart_add_item(shop);
             break;
@@ -219,7 +412,7 @@ void user_ui(shop_t *shop)
         case 'O':
             menu_cart_checkout(shop);
             break;
-
+/*
         case 'Z':
             menu_undo(shop);
             break;

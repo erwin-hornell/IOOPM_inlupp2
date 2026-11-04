@@ -75,6 +75,17 @@ void new_cart(shop_t *shop);
 /// @return true if cart was removed
 bool remove_cart(shop_t *shop, size_t id);
 
+/// @brief Returns a list of all cart id currently in use
+/// @param shop 
+/// @return A list of cart id:s
+ioopm_list_t *get_carts(shop_t *shop);
+
+/// @brief Returns true if a cart with the given id exists
+/// @param shop to check
+/// @param id of cart to check
+/// @return Returns true if a cart with the given id exists
+bool has_cart(shop_t *shop, size_t id);
+
 /// @brief returns a list of all items in a cart
 /// @param shop 
 /// @param id of cart
@@ -97,6 +108,14 @@ bool add_to_cart(shop_t *shop, size_t id, char *name, size_t amount);
 /// @param amount to remove
 /// @return true if items where successfully removed
 bool remove_from_cart(shop_t *shop, size_t id, item_t *item, size_t amount);
+
+/// @brief Returns the totla cost of a cart
+/// @param shop 
+/// @param id of cart
+/// @param total_cost pointer to total cost of cart
+/// @return returns true if cart could be found
+bool cart_total_cost(shop_t *shop, size_t id, size_t *total_cost);
+
 
 /// @brief checksout cart
 /// @param shop to check out from

@@ -10,6 +10,7 @@ PROF_DEST = ./tests/prof
 TARGET_db = db_tests
 TARGET_cart = cart_tests
 TARGET_shop = shop_tests
+TARGET_main = main
 UTILS = utils/utils.c
 STR_UTILS = utils/string_utils.c
 
@@ -17,6 +18,7 @@ GENERICS = ./generics/generics.c
 TESTS_DB = tests/db_tests.c
 TESTS_CART = tests/cart_tests.c
 TESTS_SHOP = tests/shop_tests.c
+
 
 IOOPM_SRC = ../IOOPM_inlupp1/hash_table.c ../IOOPM_inlupp1/linked_list.c
 
@@ -63,12 +65,17 @@ gdb-shop: $(TARGET_shop)
 	$(GDB) ./$(PROF_DEST)/$(TARGET_shop)
 
 
-
-run: main.c user_UI.c $(SHOP) $(IOOPM_SRC) $(GENERICS) $(UTILS) $(STR_UTILS)
+$(TARGET_main): main.c user_UI.c $(SHOP) $(IOOPM_SRC) $(GENERICS) $(UTILS) $(STR_UTILS)
 	$(CC) $^ -o ./src/main
+
+run: $(TARGET_main)
 	./src/main
+
+valgrind-main: $(TARGET_main)
+	$(VALGRIND) ./src/main
 
 clean:
 	rm -f $(TARGET_db) $(TARGET_cart) *.gcda *.gcno *.gcov
 	rm -f $(PROF_DEST)/*
+	rm -f src/*
 	rm -f gmon.out profile.txt
