@@ -338,22 +338,22 @@ void test_remove_from_cart()
 
     add_to_db(shop, "item", "item the", 14);
 
-    // remove invalid (not added)
+    // remove invalid (no cart)
     CU_ASSERT_FALSE(remove_from_cart(shop, 0, "the item", 3));
 
-    new_cart(shop);
     // remove valid
-    CU_ASSERT_TRUE(add_to_cart(shop, 0, "the item", 2));
-    CU_ASSERT_TRUE(remove_from_cart(shop, 0, "the item", 1));
-
     new_cart(shop);
+    CU_ASSERT_TRUE(add_to_cart(shop, 0, "item", 2));
+    CU_ASSERT_TRUE(remove_from_cart(shop, 0, "item", 1));
+
     // remove invalid (cart 1 wrong amount)
-    CU_ASSERT_FALSE(remove_from_cart(shop, 1, "the item", 1));
-
     new_cart(shop);
-    // remove too much
-    CU_ASSERT_TRUE(add_to_cart(shop, 2, "the item", 1));
-    CU_ASSERT_FALSE(remove_from_cart(shop, 2, "the item", 2));
+    CU_ASSERT_FALSE(remove_from_cart(shop, 1, "item", 1));
+
+    // remove invalid (removing more than is in the cart)
+    new_cart(shop);
+    CU_ASSERT_TRUE(add_to_cart(shop, 2, "item", 1));
+    CU_ASSERT_FALSE(remove_from_cart(shop, 2, "item", 2));
 
     shop_destroy(shop);
 }
@@ -423,8 +423,8 @@ void test_shop_checkout_valid()
     add_to_cart(shop, 1, "pc", 2);
 
     // checkout carts
-    CU_ASSERT_TRUE(checkout_cart(shop, 0));
-    CU_ASSERT_TRUE(checkout_cart(shop, 1));
+    CU_ASSERT_TRUE(checkout_cart(shop, 0)); // MEMORY ERROR: Use of uninitialised value of size 8
+    CU_ASSERT_TRUE(checkout_cart(shop, 1)); // MEMORY ERROR: Use of uninitialised value of size 8
 
     shop_destroy(shop);
 }

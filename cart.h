@@ -75,3 +75,9 @@ size_t cart_cost(cart_t *cart);
 /// @param cart a cart
 /// @return list of item_t
 ioopm_list_t *cart_items(cart_t *cart);
+
+/// @brief looks up a cart item in a cart
+/// @param cart a cart
+/// @param item_name an item's name
+/// @return pointer to cart_item_t (NULL if none could be found!)
+cart_item_t *cart_lookup(cart_t *cart, char *item_name);

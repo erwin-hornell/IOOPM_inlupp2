@@ -6,6 +6,9 @@
 #include "shop.h"
 #include "utils/utils.h"
 
+// TEMP
+#include <stdio.h>
+
 struct shop 
 {
     db_t *db;
@@ -141,32 +144,45 @@ bool cart_get_all_items(shop_t *shop, size_t id, ioopm_list_t **items)
 
 bool add_to_cart(shop_t *shop, size_t id, char *name, size_t amount)
 {
-
-
-    value_t cart_res;
+    // lookup item (item_t) in shop database
     item_t *item;
-    if(!ioopm_hash_table_lookup(shop->carts, INT_AS_ELEM(id), &cart_res))
-    {
-        return false;
-    }
     if(!get_merch(shop->db, name, &item))
     {
         return false;
     }
-    cart_t *cart = cart_res.p;
+
+    // lookup cart of given id in shop
+    value_t cart_ptr_elem;
+    if(!ioopm_hash_table_lookup(shop->carts, INT_AS_ELEM(id), &cart_ptr_elem))
+    {
+        return false;
+    }
+    cart_t *cart = cart_ptr_elem.p;
+
+    // add amount of item to cart
     cart_add(cart, item, amount);
     return true;
 }
 
-bool remove_from_cart(shop_t *shop, size_t id, item_t *item, size_t amount)
+bool remove_from_cart(shop_t *shop, size_t id, char *name, size_t amount)
 {
-    value_t res;
-    if(!ioopm_hash_table_lookup(shop->carts, INT_AS_ELEM(id), &res))
+    value_t cart_ptr_elem;
+    if(!ioopm_hash_table_lookup(shop->carts, INT_AS_ELEM(id), &cart_ptr_elem))
     {
         return false;
     }
-    cart_t *cart = res.p;
-    return cart_remove(cart, item, amount);
+    cart_t *cart = cart_ptr_elem.p;
+    cart_item_t *cart_item = cart_lookup(cart, name);
+
+    if (cart_item == NULL)
+    {
+        return false;
+    }
+    else
+    {
+        item_t *item = cart_item_item(cart_item);
+        return cart_remove(cart, item, amount);
+    }
 }
 
 bool cart_total_cost(shop_t *shop, size_t id, size_t *total_cost)

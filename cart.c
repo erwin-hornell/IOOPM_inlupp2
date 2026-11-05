@@ -194,3 +194,10 @@ ioopm_list_t *cart_items(cart_t *cart)
 
     return ls;
 }
+
+
+cart_item_t *cart_lookup(cart_t *cart, char *item_name) {
+    value_t item_ptr = PTR_AS_ELEM(NULL);
+    ioopm_hash_table_lookup(cart->items, PTR_AS_ELEM(item_name), &item_ptr);
+    return item_ptr.p;
+}

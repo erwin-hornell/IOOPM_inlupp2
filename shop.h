@@ -104,10 +104,10 @@ bool add_to_cart(shop_t *shop, size_t id, char *name, size_t amount);
 /// @brief removes an amount of an item from a cart
 /// @param shop 
 /// @param id of the cart
-/// @param item to be removed
+/// @param name name of item to be removed from cart
 /// @param amount to remove
 /// @return true if items where successfully removed
-bool remove_from_cart(shop_t *shop, size_t id, item_t *item, size_t amount);
+bool remove_from_cart(shop_t *shop, size_t id, char *name, size_t amount);
 
 /// @brief Returns the totla cost of a cart
 /// @param shop 
