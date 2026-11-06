@@ -227,7 +227,7 @@ bool can_checkout(shop_t *shop, size_t id)
         ioopm_list_iterator_advance(it))
     {
         cart_item_t *cart_item = ioopm_list_iterator_current(it).p;
-        char *name = item_name(cart_item_item(cart_item));
+        char *name = item_name(cart_item_item(cart_item)); // BUG: cannot access the memory here
         size_t amount = cart_item_amount(cart_item);
         size_t amount_in_stock;
         if(!get_stock(shop->db, name, &amount_in_stock)
