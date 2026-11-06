@@ -122,6 +122,9 @@ void shelf_amount_set(shelf_t *shelf, size_t amount) {
 void shelf_amount_add(shelf_t *shelf, size_t addend) {
     shelf->amount += addend;
 }
+void shelf_amount_remove(shelf_t *shelf, size_t addend) {
+    shelf->amount -= addend;
+}
 
 
 size_t int_hash(const value_t key)

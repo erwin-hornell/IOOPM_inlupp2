@@ -2,8 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include "db.h"
-#include "generics/generics.h"
-#include "utils/utils.h"
+#include "../generics/generics.h"
+#include "../utils/utils.h"
 
 
 
@@ -240,14 +240,17 @@ bool remove_stock(db_t *db, char *name, size_t amount)
         shelf_t *shelf = ioopm_list_iterator_current(it).p;
         if(shelf_amount(shelf) > amount)
         {
-            shelf_amount_add(shelf, -amount);
+            shelf_amount_remove(shelf, amount);
         }
         else
         {
             amount -= shelf_amount(shelf);
-            ioopm_list_iterator_remove(it);
+            shelf_t *shelf = ioopm_list_iterator_remove(it).p;
+            shelf_destroy(shelf);
         }
     }
+    ioopm_list_iterator_destroy(it);
+
     return true;
 }
 

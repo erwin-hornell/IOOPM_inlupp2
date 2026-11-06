@@ -1,6 +1,6 @@
 #pragma once
 #include <stdbool.h>
-#include "generics/generics.h"
+#include "../generics/generics.h"
 
 typedef struct db db_t;
 

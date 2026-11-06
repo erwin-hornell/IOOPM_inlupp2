@@ -2,7 +2,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include "../shop.h"
+#include "../backend/shop.h"
 #include "../generics/generics.h"
 
 
@@ -328,6 +328,28 @@ void test_add_to_cart()
     shop_destroy(shop);
 }
 
+
+// ---------------------------------------------------------
+// Add edit add
+// ---------------------------------------------------------
+void test_add_edit_add()
+{
+    shop_t *shop = shop_create();
+    CU_ASSERT_PTR_NOT_NULL_FATAL(shop);
+
+    new_cart(shop);
+    // add stuff
+    add_to_db(shop, "the item", "its the item", 100);
+    CU_ASSERT_TRUE(add_to_cart(shop, 0, "the item", 2));
+    edit_item(shop, "the item", "new name", "new desc", 10);
+    CU_ASSERT_TRUE(add_to_cart(shop, 0, "new name", 2));
+
+    // add it again
+    CU_ASSERT_TRUE(add_to_cart(shop, 0, "new name", 3));
+
+    shop_destroy(shop);
+}
+
 // ---------------------------------------------------------
 // Remove from cart
 // ---------------------------------------------------------
@@ -489,6 +511,8 @@ int main(void)
 
     CU_add_test(suite, "add to cart", test_add_to_cart);
 
+    CU_add_test(suite, "add edit add", test_add_edit_add);
+    
     CU_add_test(suite, "remove from cart", test_remove_from_cart);
 
     CU_add_test(suite, "get carts' content lists", test_list_cart);

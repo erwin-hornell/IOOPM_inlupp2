@@ -1,9 +1,9 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdio.h>
-#include "utils/utils.h"
-#include "utils/string_utils.h"
-#include "shop.h"
+#include "../utils/utils.h"
+#include "../utils/string_utils.h"
+#include "../backend/shop.h"
 #include <stdlib.h>
 
 void new_menu(char *header)
@@ -294,7 +294,7 @@ void menu_cart_add_item(shop_t *shop)
     if(!try_ask_item(shop, &item))
         return;
 
-    int amount = ask_question_int("Enter amount to add: ");
+    size_t amount = (size_t)ask_question_int("Enter amount to add: ");
     print_suc(add_to_cart(shop, cart_id, item_name(item), amount));
 }
 void menu_cart_remove_item(shop_t *shop)
@@ -311,7 +311,7 @@ void menu_cart_remove_item(shop_t *shop)
         return;
 
     int amount = ask_question_int("Enter amount to remove: ");
-    print_suc(remove_from_cart(shop, cart_id, item, amount));
+    print_suc(remove_from_cart(shop, cart_id, item_name(item), amount));
 }
 void menu_cart_cost(shop_t *shop)
 {

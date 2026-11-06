@@ -2,13 +2,8 @@
 #include <stdlib.h>
 
 #include "db.h"
-#include "generics/generics.h"
-
-#include "../IOOPM_inlupp1/hash_table.h"
-#include "../IOOPM_inlupp1/hash_table_iterator.h"
-
-#include "../IOOPM_inlupp1/linked_list.h"
-#include "../IOOPM_inlupp1/linked_list_iterator.h"
+#include "../generics/generics.h"
+#include "../utils/utils.h"
 
 
 struct cart_item
@@ -176,31 +171,31 @@ size_t cart_cost(cart_t *cart)
 }
 
 
-void cart_insert_in_order(cart_item_t *to_insert, ioopm_list_t *list)
-{
-    if(ioopm_list_is_empty(list))
-    {
-        ioopm_list_append(list, PTR_AS_ELEM(to_insert));
-        return;
-    }
-    ioopm_list_iterator_t *list_it;
+// void cart_insert_in_order(cart_item_t *to_insert, ioopm_list_t *list)
+// {
+//     if(ioopm_list_is_empty(list))
+//     {
+//         ioopm_list_append(list, PTR_AS_ELEM(to_insert));
+//         return;
+//     }
+//     ioopm_list_iterator_t *list_it;
 
-    for(list_it = ioopm_list_iterator_create(list);
-        !ioopm_list_iterator_at_end(list_it);
-        ioopm_list_iterator_advance(list_it))
-        {
-            cart_item_t *current_merch = ioopm_list_iterator_current(list_it).p;
-            if(strcmp(item_name(cart_item_item(to_insert)), item_name(cart_item_item(current_merch))) < 0)
-            {
-                ioopm_list_iterator_insert(list_it, PTR_AS_ELEM(to_insert));
-                ioopm_list_iterator_destroy(list_it);
-                return;
-            }
+//     for(list_it = ioopm_list_iterator_create(list);
+//         !ioopm_list_iterator_at_end(list_it);
+//         ioopm_list_iterator_advance(list_it))
+//         {
+//             cart_item_t *current_merch = ioopm_list_iterator_current(list_it).p;
+//             if(strcmp(item_name(cart_item_item(to_insert)), item_name(cart_item_item(current_merch))) < 0)
+//             {
+//                 ioopm_list_iterator_insert(list_it, PTR_AS_ELEM(to_insert));
+//                 ioopm_list_iterator_destroy(list_it);
+//                 return;
+//             }
 
-        }
-    ioopm_list_append(list, PTR_AS_ELEM(to_insert));
-    ioopm_list_iterator_destroy(list_it);
-}
+//         }
+//     ioopm_list_append(list, PTR_AS_ELEM(to_insert));
+//     ioopm_list_iterator_destroy(list_it);
+// }
 
 
 ioopm_list_t *cart_items(cart_t *cart)
@@ -213,7 +208,7 @@ ioopm_list_t *cart_items(cart_t *cart)
         ioopm_hash_table_iterator_advance(it))
         {
             cart_item_t *cart_item = ioopm_hash_table_iterator_current_value(it).p;
-            cart_insert_in_order(cart_item, ls);
+            insert_in_order(cart_item->item, ls);
         }
     ioopm_hash_table_iterator_destroy(it);
 

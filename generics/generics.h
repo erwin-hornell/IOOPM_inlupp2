@@ -54,6 +54,8 @@ char *shelf_name(shelf_t *shelf);
 size_t shelf_amount(shelf_t *shelf);
 void shelf_amount_set(shelf_t *shelf, size_t amount);
 void shelf_amount_add(shelf_t *shelf, size_t addend);
+void shelf_amount_remove(shelf_t *shelf, size_t addend);
+
 
 
 

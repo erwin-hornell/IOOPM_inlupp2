@@ -3,7 +3,7 @@
 #include <string.h>
 
 #include "db.h"
-#include "generics/generics.h"
+#include "../generics/generics.h"
 
 
 typedef struct cart cart_t;

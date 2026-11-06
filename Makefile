@@ -1,11 +1,12 @@
 CC = gcc
 
-CFLAGS = -Wall -Wextra -g -I ../IOOPM_inlupp1
+CFLAGS = -Wall -Wextra -g -O0 -I ../IOOPM_inlupp1
 LDLIBS = -lcunit
 VALGRIND = valgrind --leak-check=full
 GDB = gdb
+GCOV = gcov
 
-SHOP = db.c cart.c shop.c
+SHOP = backend/db.c backend/cart.c backend/shop.c
 PROF_DEST = ./tests/prof
 TARGET_db = db_tests
 TARGET_cart = cart_tests
@@ -22,14 +23,14 @@ TESTS_SHOP = tests/shop_tests.c
 
 IOOPM_SRC = ../IOOPM_inlupp1/hash_table.c ../IOOPM_inlupp1/linked_list.c
 
-all: $(TARGET_db) $(TARGET_cart)
+all: $(TARGET_db) $(TARGET_cart) $(TARGET_shop) $(TARGET_main)
 
 # Create destination folder
 $(PROF_DEST):
 	mkdir -p $(PROF_DEST)
 
 # Database tests
-$(TARGET_db): db.c $(TESTS_DB) $(IOOPM_SRC) $(GENERICS) | $(PROF_DEST)
+$(TARGET_db): backend/db.c $(TESTS_DB) $(IOOPM_SRC) $(GENERICS) | $(PROF_DEST)
 	$(CC) $(CFLAGS) --coverage $^ -o $(PROF_DEST)/$@ $(LDLIBS)
 
 tests-db: $(TARGET_db)
@@ -38,8 +39,9 @@ tests-db: $(TARGET_db)
 valgrind-db: $(TARGET_db)
 	$(VALGRIND) ./$(PROF_DEST)/$(TARGET_db)
 
+
 # Cart tests
-$(TARGET_cart): cart.c $(TESTS_CART) $(IOOPM_SRC) $(GENERICS) | $(PROF_DEST)
+$(TARGET_cart): backend/cart.c $(TESTS_CART) $(IOOPM_SRC) $(GENERICS) | $(PROF_DEST)
 	$(CC) $(CFLAGS) --coverage $^ -o $(PROF_DEST)/$@ $(LDLIBS)
 
 tests-cart: $(TARGET_cart)
@@ -50,6 +52,8 @@ valgrind-cart: $(TARGET_cart)
 
 gdb-cart: $(TARGET_cart)
 	$(GDB) ./$(PROF_DEST)/$(TARGET_cart)
+
+
 
 # shop tests
 $(TARGET_shop): $(SHOP) $(TESTS_SHOP) $(IOOPM_SRC) $(GENERICS) | $(PROF_DEST)
@@ -65,7 +69,7 @@ gdb-shop: $(TARGET_shop)
 	$(GDB) ./$(PROF_DEST)/$(TARGET_shop)
 
 
-$(TARGET_main): main.c user_UI.c $(SHOP) $(IOOPM_SRC) $(GENERICS) $(UTILS) $(STR_UTILS)
+$(TARGET_main): main.c frontend/user_UI.c $(SHOP) $(IOOPM_SRC) $(GENERICS) $(UTILS) $(STR_UTILS)
 	$(CC) $^ -o ./src/main
 
 run: $(TARGET_main)
@@ -73,6 +77,26 @@ run: $(TARGET_main)
 
 valgrind-main: $(TARGET_main)
 	$(VALGRIND) ./src/main
+	
+gdb-main: $(TARGET_main)
+	$(GDB) ./src/main
+
+
+
+
+# Database coverage
+gcov-db: tests-db
+	cd $(PROF_DEST) && $(GCOV) -b -c -f db_tests-db.gcno
+
+# Cart coverage
+gcov-cart: tests-cart
+	cd $(PROF_DEST) && $(GCOV) -b -c -f cart_tests-cart.gcno
+
+# Shop coverage
+gcov-shop: tests-shop
+	cd $(PROF_DEST) && $(GCOV) -b -c -f shop_tests-db.gcno \
+		shop_tests-cart.gcno shop_tests-shop.gcno
+
 
 clean:
 	rm -f $(TARGET_db) $(TARGET_cart) *.gcda *.gcno *.gcov

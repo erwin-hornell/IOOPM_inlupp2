@@ -4,7 +4,7 @@
 #include "cart.h"
 #include "db.h"
 #include "shop.h"
-#include "utils/utils.h"
+#include "../utils/utils.h"
 
 // TEMP
 #include <stdio.h>
@@ -50,7 +50,8 @@ bool add_to_db(shop_t *shop, char *name, char *desc, size_t price)
 
 bool remove_from_db(shop_t *shop, char *name)
 {
-    if(!remove_merch(shop->db, name))
+    item_t *res;
+    if(!get_merch(shop->db, name, &res))
     {
         return false;
     }
@@ -63,13 +64,22 @@ bool remove_from_db(shop_t *shop, char *name)
         cart_delete(cart, name);
     }
     ioopm_hash_table_iterator_destroy(it);
-    return true;
+    return remove_merch(shop->db, name);
 }   
 
 
 bool edit_item(shop_t *shop, char *name, char *new_name, char *new_desc, size_t new_price)
 {
-    return edit_merch(shop->db, name, new_name, new_desc, new_price);
+    item_t *old_item;
+    item_t *new_item;
+    bool name_is_available = !get_merch(shop->db, new_name, &new_item) || strcmp(name, new_name) == 0;
+    if(!get_merch(shop->db, name, &old_item) // Find item to edit
+    || !name_is_available // is new name available or new name is the same as old
+    || !remove_from_db(shop, name)) // try to remove
+    {
+        return false;
+    }
+    return add_to_db(shop, new_name, new_desc, new_price);
 }
 
 ioopm_list_t *list_db(shop_t *shop)
@@ -226,14 +236,15 @@ bool can_checkout(shop_t *shop, size_t id)
         !ioopm_list_iterator_at_end(it);
         ioopm_list_iterator_advance(it))
     {
-        cart_item_t *cart_item = ioopm_list_iterator_current(it).p;
-        char *name = item_name(cart_item_item(cart_item)); // BUG: cannot access the memory here
-        size_t amount = cart_item_amount(cart_item);
+        item_t *cart_item = ioopm_list_iterator_current(it).p;
+        char *name = item_name(cart_item);
+        size_t amount = cart_amount(cart, cart_item);
         size_t amount_in_stock;
         if(!get_stock(shop->db, name, &amount_in_stock)
             || amount_in_stock < amount)
             {
                 ioopm_list_iterator_destroy(it);
+                ioopm_list_destroy(items);
                 return false;
             }
     }
@@ -262,13 +273,14 @@ bool checkout_cart(shop_t *shop, size_t id)
         !ioopm_list_iterator_at_end(it);
         ioopm_list_iterator_advance(it))
     {
-        cart_item_t *cart_item = ioopm_list_iterator_current(it).p;
+        item_t *cart_item = ioopm_list_iterator_current(it).p;
         if(!remove_stock(shop->db, 
-                item_name(cart_item_item(cart_item)),
-                cart_item_amount(cart_item)))
+                item_name(cart_item),
+                cart_amount(cart, cart_item)))
             {
                 //should never be the case
                 ioopm_list_iterator_destroy(it);
+                ioopm_list_destroy(items);
                 return false;
             }
     }

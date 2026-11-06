@@ -1,12 +1,8 @@
 #pragma once
 
-#include "generics/generics.h"
+#include "../generics/generics.h"
 
-#include "../IOOPM_inlupp1/hash_table.h"
-#include "../IOOPM_inlupp1/hash_table_iterator.h"
-
-#include "../IOOPM_inlupp1/linked_list.h"
-#include "../IOOPM_inlupp1/linked_list_iterator.h"
+#include "../utils/utils.h"
 
 
 typedef struct shop shop_t;
