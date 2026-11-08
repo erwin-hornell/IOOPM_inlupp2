@@ -7,6 +7,7 @@
 
 
 
+
 //TODO: Fix name
 struct db_merch
 {
@@ -114,6 +115,7 @@ bool edit_merch(db_t *db, char *name, char* new_name, char *new_desc, size_t new
     }
     if(!ioopm_hash_table_remove(db->merch, PTR_AS_ELEM(name), &old))
     {
+        // should never fail
         return false;
     }
     //update without destroing or moving item means shopping carts dont need to be updated
@@ -234,13 +236,15 @@ bool remove_stock(db_t *db, char *name, size_t amount)
 
     ioopm_list_iterator_t *it;
     for(it = ioopm_list_iterator_create(merch->locs);
-        !ioopm_list_iterator_at_end(it);
-        ioopm_list_iterator_advance(it))
+        !ioopm_list_iterator_at_end(it);)
     {
         shelf_t *shelf = ioopm_list_iterator_current(it).p;
+
         if(shelf_amount(shelf) > amount)
         {
             shelf_amount_remove(shelf, amount);
+            amount = 0;
+            ioopm_list_iterator_advance(it);
         }
         else
         {

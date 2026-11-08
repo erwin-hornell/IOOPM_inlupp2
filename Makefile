@@ -5,6 +5,8 @@ LDLIBS = -lcunit
 VALGRIND = valgrind --leak-check=full
 GDB = gdb
 GCOV = gcov
+COVERAGE = gcovr
+
 
 SHOP = backend/db.c backend/cart.c backend/shop.c
 PROF_DEST = ./tests/prof
@@ -38,6 +40,9 @@ tests-db: $(TARGET_db)
 
 valgrind-db: $(TARGET_db)
 	$(VALGRIND) ./$(PROF_DEST)/$(TARGET_db)
+
+gdb-db: $(TARGET_db)
+	$(GDB) ./$(PROF_DEST)/$(TARGET_db)
 
 
 # Cart tests
@@ -77,6 +82,9 @@ run: $(TARGET_main)
 
 valgrind-main: $(TARGET_main)
 	$(VALGRIND) ./src/main
+
+valgrind-text: $(TARGET_main)
+	$(VALGRIND) ./src/main < test.txt
 	
 gdb-main: $(TARGET_main)
 	$(GDB) ./src/main
@@ -85,17 +93,21 @@ gdb-main: $(TARGET_main)
 
 
 # Database coverage
+
 gcov-db: tests-db
-	cd $(PROF_DEST) && $(GCOV) -b -c -f db_tests-db.gcno
+	./$(PROF_DEST)/$(TARGET_db)
+	gcovr --root . --object-directory $(PROF_DEST) --filter 'backend/db.c' --txt
 
 # Cart coverage
 gcov-cart: tests-cart
-	cd $(PROF_DEST) && $(GCOV) -b -c -f cart_tests-cart.gcno
+	./$(PROF_DEST)/$(TARGET_cart)
+	gcovr --root . --object-directory $(PROF_DEST) --filter 'backend/cart.c' --txt
+
 
 # Shop coverage
 gcov-shop: tests-shop
-	cd $(PROF_DEST) && $(GCOV) -b -c -f shop_tests-db.gcno \
-		shop_tests-cart.gcno shop_tests-shop.gcno
+	./$(PROF_DEST)/$(TARGET_shop)
+	gcovr --root . --object-directory $(PROF_DEST) --filter 'backend/shop.c' --txt
 
 
 clean:

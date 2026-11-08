@@ -81,8 +81,10 @@ void test_db_get_once()
     char *desc = "a red mazda";
     int price = 101;
 
-    CU_ASSERT_TRUE(add_merch(db, name, desc, price));
     item_t *item; 
+    CU_ASSERT_FALSE(get_merch(db, name, &item));
+    CU_ASSERT_TRUE(add_merch(db, name, desc, price));
+    
     CU_ASSERT_TRUE(get_merch(db, name, &item));
     CU_ASSERT_EQUAL(strcmp(item_name(item), name), 0);
     db_destroy(db);
@@ -101,6 +103,7 @@ void test_db_edit_once()
     char *desc = "a red mazda", *new_desc = "sick car";
     int price = 101, new_price = 202;
 
+    CU_ASSERT_FALSE(edit_merch(db, name, new_name, new_desc, new_price));
     CU_ASSERT_TRUE(add_merch(db, name, desc, price));
     CU_ASSERT_TRUE(edit_merch(db, name, new_name, new_desc, new_price));
     CU_ASSERT_FALSE(remove_merch(db, name));
@@ -137,9 +140,11 @@ void test_db_update_stock()
     char *name = "car";
     char *desc = "a red mazda";
     int price = 101;
-    char *loca = "20B";
+    char *loca = "B20";
     size_t amount = 20;
     size_t res = 0;
+
+    CU_ASSERT_FALSE(get_stock(db, name, &res));
 
     CU_ASSERT_TRUE(add_merch(db, name, desc, price));
     CU_ASSERT_TRUE(add_stock(db, name, loca, amount));
@@ -148,6 +153,48 @@ void test_db_update_stock()
 
     db_destroy(db);
 }
+// ---------------------------------------------------------
+// Remove stock
+// ---------------------------------------------------------
+
+
+
+void test_db_update_reomve_stock()
+{
+    db_t *db = db_create();
+    char *name = "car";
+    char *desc = "a red mazda";
+    int price = 101;
+    char *loca1 = "M90", *loca2 = "N82";
+    size_t amount = 20;
+    size_t res = 0;
+
+    CU_ASSERT_FALSE(remove_stock(db, name, amount));
+
+    CU_ASSERT_TRUE(add_merch(db, name, desc, price));
+
+    CU_ASSERT_FALSE(remove_stock(db, name, amount));
+
+    CU_ASSERT_TRUE(add_stock(db, name, loca1, amount));
+
+    CU_ASSERT_FALSE(remove_stock(db, name, amount + 1));
+
+    CU_ASSERT_TRUE(add_stock(db, name, loca2, amount));
+
+    CU_ASSERT_TRUE(remove_stock(db, name, amount - 1));
+    CU_ASSERT_TRUE(remove_stock(db, name, amount));
+
+    CU_ASSERT_TRUE(get_stock(db, name, &res));
+
+
+    printf("\n res:%d\n", res);
+    CU_ASSERT_EQUAL(1, res);
+    
+    db_destroy(db);
+}
+
+
+
 
 
 // ---------------------------------------------------------
@@ -208,6 +255,7 @@ int main(void)
     CU_add_test(suite, "Try to edit merch to exiting name", test_db_edit_exiting_name);
 
     CU_add_test(suite, "update stock once", test_db_update_stock);
+    CU_add_test(suite, "Replenish and reve stock",  test_db_update_reomve_stock);
 
     CU_add_test(suite, "Get all items from db", test_db_get_all);
 

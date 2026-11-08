@@ -6,6 +6,8 @@
 #include "../backend/shop.h"
 #include <stdlib.h>
 
+#define MAX_PRINT 20
+
 void new_menu(char *header)
 {
     int len = strlen(header)+(2*9);
@@ -48,6 +50,12 @@ void print_suc(bool suc)
     }
 }
 
+bool confirm(char *question)
+{
+    char ans = ask_question_char(question);
+    return toupper(ans) == 'Y';
+}
+
 int print_items(ioopm_list_t *items)
 {
     int index = 1;
@@ -62,6 +70,15 @@ int print_items(ioopm_list_t *items)
                     item_name(item),
                     item_desc(item),
                     item_price(item));
+
+            if(index % MAX_PRINT == 0)
+            {
+                char next = ask_question_char(
+                    "Press any to continue listing or n/N to return");
+                if(toupper(next) == 'N');
+                    return index;
+            }
+            
             index++;
         }
     ioopm_list_iterator_destroy(it);
@@ -82,7 +99,7 @@ int print_carts(ioopm_list_t *carts)
         {
             int id = ioopm_list_iterator_current(it).i;
             printf("%d: cart_%d \n",
-                    index,
+                    id,
                     id);
             index++;
         }
@@ -95,11 +112,11 @@ int print_carts(ioopm_list_t *carts)
 }
 
 
-void print_locations(ioopm_list_t *locs, item_t *item)
+void print_locations(ioopm_list_t *locs, char *name)
 {
     int index = 1;
 
-    printf("Stock of %s: \n", item_name(item));
+    printf("Stock of %s: \n", name);
 
     ioopm_list_iterator_t *it;
     for(it = ioopm_list_iterator_create(locs);
@@ -120,45 +137,21 @@ void print_locations(ioopm_list_t *locs, item_t *item)
     }
 }
 
-bool try_ask_item(shop_t *shop, item_t **item)
+bool try_ask_item(shop_t *shop, char **name)
 {
     ioopm_list_t *items = list_db(shop);
-    int index;
-    int count;
-    do{
-        count = print_items(items);
-        index = ask_question_int("Selcet index or enter 0 to return: ");
-        if(index == 0)
-        {
-            ioopm_list_destroy(items);
-            return false;
-        }
-    } while (index > count || index < 0);
-
-    *item = ioopm_list_get(items, index - 1).p;
-
+    print_items(items);
+    *name = ask_question_string("Enter name of item: ");
     ioopm_list_destroy(items);
-
     return true;
 }
 
 bool try_ask_cart(shop_t *shop, int *id)
 {
     ioopm_list_t *carts = get_carts(shop);
-    int index;
-    int count;
-    do{
-        count = print_carts(carts);
-        index = ask_question_int("Selcet index or enter 0 to return: ");
-        if(index == 0)
-        {
-            ioopm_list_destroy(carts);
-            return false;
-        }
-            
-        
-    } while (index < 0 || index > count);
-    *id = ioopm_list_get(carts, index - 1).i;
+    print_carts(carts);
+    *id = ask_question_int("Select id of cart: ");
+
     ioopm_list_destroy(carts);
 
     return true;
@@ -207,18 +200,23 @@ void menu_add_item(shop_t *shop)
 void menu_remove_item(shop_t *shop)
 {
     new_menu("REMOVE ITEM");
-    item_t *item;
-    if(!try_ask_item(shop, &item))
+    char *name;
+    if(!try_ask_item(shop, &name))
     {
         return;
     }
-    print_suc(remove_from_db(shop, item_name(item)));
+    if(!confirm("Are you sure you want to remove item? (Y/y):"))
+    {
+        return;
+    }
+    print_suc(remove_from_db(shop, name));
+    free(name);
 }
 void menu_edit_item(shop_t *shop)
 {
     new_menu("EDIT ITEM");
-    item_t *item;
-    if(!try_ask_item(shop, &item))
+    char *name;
+    if(!try_ask_item(shop, &name))
     {
         return;
     }
@@ -226,9 +224,15 @@ void menu_edit_item(shop_t *shop)
     char *new_desc = ask_question_string("new description: ");// uses strdup
     int new_price = ask_question_int("new price: ");
 
-    print_suc(edit_item(shop, item_name(item), new_name, new_desc, new_price));
+    if(!confirm("Are you sure you want to remove item? (Y/y):"))
+    {
+        return;
+    }
+
+    print_suc(edit_item(shop, name, new_name, new_desc, new_price));
     free(new_name);
     free(new_desc);
+    free(name);
 
 }
 void menu_list_items(shop_t *shop)
@@ -241,31 +245,38 @@ void menu_list_items(shop_t *shop)
 void menu_show_stock(shop_t *shop)
 {
     new_menu("SHOW STOCK");
-    item_t *item;
-    if(!try_ask_item(shop, &item))
+    char *name;
+    if(!try_ask_item(shop, &name))
     {
         return;
     }
     ioopm_list_t *locs;
-    if(!get_merch_locs(shop, item_name(item), &locs))
+    if(!get_merch_locs(shop, name, &locs))
     {
-        printf("Could not find locations of item: %s" , item_name(item));
+        printf("Could not find locations of item: %s" , name);
     }
-    print_locations(locs, item);
-    
+    print_locations(locs, name);
+    free(name);
 }
 void menu_replenish(shop_t *shop)
 {
     new_menu("REPLENISH STOCK");
-    item_t *item;
-    if(!try_ask_item(shop, &item))
+
+    char *loc = ask_question_shelf("Enter shelf: ");
+
+    char *name;
+    if(!try_ask_item(shop, &name))
     {
         return;
     }
-    printf("Adding stock to %s:\n", item_name(item));
-    char *loc = ask_question_shelf("Enter shelf: ");
+
+    printf("Adding stock to %s:\n", name);
+
     int amount = ask_question_int("Enter amount: ");
-    print_suc(db_replenish(shop, item_name(item), loc, amount));
+
+    print_suc(db_replenish(shop, name, loc, amount));
+    free(name);
+    free(loc);
 }
 void menu_cart_create(shop_t *shop)
 {
@@ -279,6 +290,7 @@ void menu_cart_remove(shop_t *shop)
     {
         return;
     }
+    if(!confirm("Are you sure you want to remove the cart? (y/Y):"))
     print_suc(remove_cart(shop, cart_id));
 }
 void menu_cart_add_item(shop_t *shop)
@@ -289,13 +301,14 @@ void menu_cart_add_item(shop_t *shop)
     if(!try_ask_cart(shop, &cart_id))
         return;
 
-    item_t *item;
+    char *name;
 
-    if(!try_ask_item(shop, &item))
+    if(!try_ask_item(shop, &name))
         return;
 
     size_t amount = (size_t)ask_question_int("Enter amount to add: ");
-    print_suc(add_to_cart(shop, cart_id, item_name(item), amount));
+    print_suc(add_to_cart(shop, cart_id, name, amount));
+    free(name);
 }
 void menu_cart_remove_item(shop_t *shop)
 {
@@ -305,13 +318,14 @@ void menu_cart_remove_item(shop_t *shop)
     if(!try_ask_cart(shop, &cart_id))
         return;
 
-    item_t *item;
+    char *name;
 
-    if(!try_ask_item(shop, &item))
+    if(!try_ask_item(shop, &name))
         return;
 
     int amount = ask_question_int("Enter amount to remove: ");
-    print_suc(remove_from_cart(shop, cart_id, item_name(item), amount));
+    print_suc(remove_from_cart(shop, cart_id, name, amount));
+    free(name);
 }
 void menu_cart_cost(shop_t *shop)
 {
@@ -363,7 +377,7 @@ void user_ui(shop_t *shop)
     char option;
     bool end = false;
     do{
-        option = menu_main(shop);
+        option = toupper(menu_main(shop));
         switch (option)
         {
         case 'A':
@@ -412,7 +426,7 @@ void user_ui(shop_t *shop)
         case 'O':
             menu_cart_checkout(shop);
             break;
-/*
+/* TODO: implement
         case 'Z':
             menu_undo(shop);
             break;
@@ -426,7 +440,7 @@ void user_ui(shop_t *shop)
             break; */
 
         case 'Q':
-            end = true;
+            end = confirm("Are you sure you want to end? (y/Y): ");
             break;
         
         default:

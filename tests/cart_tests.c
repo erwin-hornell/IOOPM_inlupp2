@@ -55,6 +55,89 @@ void test_cart_add_existing()
 
 }
 
+// ---------------------------------------------------------
+// Get id
+// ---------------------------------------------------------
+
+void test_cart_accessors()
+{
+    cart_t *cart = cart_create(42);
+
+    char *name = strdup("car");
+    char *desc = strdup("fast car");
+
+    item_t *item = item_create(name, desc, 100);
+    cart_add(cart, item, 10);
+    cart_item_t *cart_item = cart_lookup(cart, name);
+
+    CU_ASSERT_EQUAL(cart_id(cart), 42);
+    CU_ASSERT_PTR_EQUAL(cart_item_item(cart_item), item);
+    CU_ASSERT_EQUAL(cart_item_amount(cart_item), 5);
+
+
+    cart_destroy(cart);
+    item_destroy(item);
+}
+
+// ---------------------------------------------------------
+// Lookup cart
+// ---------------------------------------------------------
+
+void test_cart_lookup()
+{
+    cart_t *cart = cart_create(1);
+
+    item_t *item = item_create(
+        strdup("car"),
+        strdup("fast car"),
+        100
+    );
+
+    cart_add(cart, item, 5);
+
+    // Existing item
+    cart_item_t *result = cart_lookup(cart, "car");
+
+    CU_ASSERT_PTR_NOT_NULL(result);
+    CU_ASSERT_PTR_EQUAL(cart_item_item(result), item);
+    CU_ASSERT_EQUAL(cart_item_amount(result), 5);
+
+    // Nonexistent item
+    CU_ASSERT_PTR_NULL(cart_lookup(cart, "bike"));
+
+    cart_destroy(cart);
+    item_destroy(item);
+}
+
+
+// ---------------------------------------------------------
+// Get delete
+// ---------------------------------------------------------
+
+void test_cart_delete()
+{
+    cart_t *cart = cart_create(1);
+
+    item_t *item = item_create(
+        strdup("car"),
+        strdup("fast car"),
+        100
+    );
+
+    cart_add(cart, item, 5);
+
+    // Delete an existing item
+    CU_ASSERT_TRUE(cart_delete(cart, "car"));
+
+    // Verify that it is gone
+    CU_ASSERT_PTR_NULL(cart_lookup(cart, "car"));
+
+    // Try deleting an item that doesn't exist
+    CU_ASSERT_FALSE(cart_delete(cart, "car"));
+
+    cart_destroy(cart);
+    item_destroy(item);
+}
 
 // ---------------------------------------------------------
 // Remove
@@ -111,9 +194,45 @@ void test_cart_remove_none()
     item_destroy(item);
 }
 
+void test_cart_remove_too_much()
+{
+    cart_t *cart = cart_create(1);
+
+    item_t *item = item_create(
+        strdup("car"),
+        strdup("fast car"),
+        100
+    );
+
+    cart_add(cart, item, 5);
+
+    // Try removing more than available
+    CU_ASSERT_FALSE(cart_remove(cart, item, 6));
+
+    // Verify that the amount hasn't changed
+    CU_ASSERT_EQUAL(cart_amount(cart, item), 5);
+
+    cart_destroy(cart);
+    item_destroy(item);
+}
+
 // ---------------------------------------------------------
 // Get items
 // ---------------------------------------------------------
+
+void test_cart_items_empty()
+{
+    cart_t *cart = cart_create(1);
+
+    ioopm_list_t *items = cart_items(cart);
+
+    CU_ASSERT_PTR_NOT_NULL(items);
+    CU_ASSERT_TRUE(ioopm_list_is_empty(items));
+
+    ioopm_list_destroy(items);
+    cart_destroy(cart);
+}
+
 
 void test_cart_get_items()
 {
@@ -153,6 +272,41 @@ void test_cart_get_items()
 
 }
 
+// ---------------------------------------------------------
+// Cost
+// ---------------------------------------------------------
+
+void test_cart_cost()
+{
+    cart_t *cart = cart_create(1);
+
+    item_t *car = item_create(
+        strdup("car"),
+        strdup("fast car"),
+        100
+    );
+
+    item_t *bike = item_create(
+        strdup("bike"),
+        strdup("mountain bike"),
+        50
+    );
+
+    // Empty cart
+    CU_ASSERT_EQUAL(cart_cost(cart), 0);
+
+    cart_add(cart, car, 2);
+    cart_add(cart, bike, 3);
+
+    // 2 * 100 + 3 * 50 = 350
+    CU_ASSERT_EQUAL(cart_cost(cart), 350);
+
+    cart_destroy(cart);
+    item_destroy(car);
+    item_destroy(bike);
+}
+
+
 
 // ---------------------------------------------------------
 // Main
@@ -172,13 +326,24 @@ int main(void)
     CU_add_test(suite, "add item to cart once", test_cart_add_once);
     CU_add_test(suite, "add the same item twice", test_cart_add_existing);
 
+    CU_add_test(suite, "get id of cart", test_cart_accessors);
+
+    CU_add_test(suite, "Lookup cart", test_cart_lookup);
+
+    CU_add_test(suite, "Delete cart", test_cart_delete);
+
+
+
     CU_add_test(suite, "remove all of one item", test_cart_remove_all);
     CU_add_test(suite, "reomve some of one item", test_cart_remove_some);
     CU_add_test(suite, "reomve from empty cart", test_cart_remove_none);
+    CU_add_test(suite, "reomve too much", test_cart_remove_too_much);
     
+    CU_add_test(suite, "get all from empty cart", test_cart_items_empty);
     CU_add_test(suite, "get all items from cart", test_cart_get_items);
-
-
+    
+    CU_add_test(suite, "Cart cost",  test_cart_cost);
+    
 
     CU_basic_set_mode(CU_BRM_VERBOSE);
     CU_basic_run_tests();
