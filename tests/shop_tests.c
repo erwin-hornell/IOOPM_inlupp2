@@ -329,6 +329,89 @@ void test_add_to_cart()
 }
 
 
+void test_shop_add_to_cart_invalid()
+{
+    shop_t *shop = shop_create();
+    CU_ASSERT_PTR_NOT_NULL_FATAL(shop);
+ 
+    new_cart(shop);
+    add_to_db(shop, "car", "a fast car", 99);
+ 
+
+    CU_ASSERT_FALSE(add_to_cart(shop, 0, "ghost", 1));
+
+    CU_ASSERT_FALSE(add_to_cart(shop, 42, "car", 1));
+ 
+    shop_destroy(shop);
+}
+
+
+// ---------------------------------------------------------
+// Has cart
+// ---------------------------------------------------------
+
+void test_shop_has_cart()
+{
+    shop_t *shop = shop_create();
+    CU_ASSERT_PTR_NOT_NULL_FATAL(shop);
+ 
+    CU_ASSERT_FALSE(has_cart(shop, 0));
+    new_cart(shop);
+    CU_ASSERT_TRUE(has_cart(shop, 0));
+    CU_ASSERT_FALSE(has_cart(shop, 1));
+    CU_ASSERT_TRUE(remove_cart(shop, 0));
+    CU_ASSERT_FALSE(has_cart(shop, 0));
+ 
+    shop_destroy(shop);
+}
+
+
+// ---------------------------------------------------------
+// Add edit
+// ---------------------------------------------------------
+
+void test_shop_edit_nonexistent()
+{
+    shop_t *shop = shop_create();
+    CU_ASSERT_PTR_NOT_NULL_FATAL(shop);
+ 
+    CU_ASSERT_FALSE(edit_item(shop, "ghost", "new", "desc", 1));
+ 
+    shop_destroy(shop);
+}
+ 
+
+void test_shop_edit_name_taken()
+{
+    shop_t *shop = shop_create();
+    CU_ASSERT_PTR_NOT_NULL_FATAL(shop);
+ 
+    add_to_db(shop, "car", "a fast car", 99);
+    add_to_db(shop, "truck", "a big truck", 199);
+ 
+    CU_ASSERT_FALSE(edit_item(shop, "car", "truck", "x", 1));
+ 
+    // both originals must still exist
+    CU_ASSERT_TRUE(remove_from_db(shop, "car"));
+    CU_ASSERT_TRUE(remove_from_db(shop, "truck"));
+ 
+    shop_destroy(shop);
+}
+ 
+void test_shop_edit_same_name()
+{
+    shop_t *shop = shop_create();
+    CU_ASSERT_PTR_NOT_NULL_FATAL(shop);
+ 
+    add_to_db(shop, "car", "a fast car", 99);
+    CU_ASSERT_TRUE(edit_item(shop, "car", "car", "a faster car", 150));
+    CU_ASSERT_TRUE(remove_from_db(shop, "car"));
+ 
+    shop_destroy(shop);
+}
+
+
+
 // ---------------------------------------------------------
 // Add edit add
 // ---------------------------------------------------------
@@ -380,6 +463,24 @@ void test_remove_from_cart()
     shop_destroy(shop);
 }
 
+void test_shop_remove_from_cart_not_in_cart()
+{
+    shop_t *shop = shop_create();
+    CU_ASSERT_PTR_NOT_NULL_FATAL(shop);
+ 
+    add_to_db(shop, "car", "a fast car", 99);
+    add_to_db(shop, "bike", "a bicycle", 49);
+    new_cart(shop);
+    CU_ASSERT_TRUE(add_to_cart(shop, 0, "car", 1));
+ 
+    CU_ASSERT_FALSE(remove_from_cart(shop, 0, "bike", 1));
+    CU_ASSERT_FALSE(remove_from_cart(shop, 0, "ghost", 1));
+ 
+    shop_destroy(shop);
+}
+
+
+
 // ---------------------------------------------------------
 // Get all cart items
 // ---------------------------------------------------------
@@ -414,6 +515,115 @@ void test_list_cart()
 }
 
 // ---------------------------------------------------------
+// Remove items from db with cart refrence
+// ---------------------------------------------------------
+
+void test_shop_remove_from_db_clears_carts()
+{
+    shop_t *shop = shop_create();
+    CU_ASSERT_PTR_NOT_NULL_FATAL(shop);
+ 
+    add_to_db(shop, "car", "a fast car", 99);
+    add_to_db(shop, "bike", "a bicycle", 49);
+ 
+    new_cart(shop);
+    new_cart(shop);
+    CU_ASSERT_TRUE(add_to_cart(shop, 0, "car", 2));
+    CU_ASSERT_TRUE(add_to_cart(shop, 0, "bike", 1));
+    CU_ASSERT_TRUE(add_to_cart(shop, 1, "car", 1));
+ 
+    CU_ASSERT_TRUE(remove_from_db(shop, "car"));
+ 
+    ioopm_list_t *items;
+    CU_ASSERT_TRUE_FATAL(cart_get_all_items(shop, 0, &items));
+    CU_ASSERT_EQUAL(ioopm_list_size(items), 1);
+    item_t *left = ioopm_list_head(items).p;
+    CU_ASSERT_STRING_EQUAL(item_name(left), "bike");
+    ioopm_list_destroy(items);
+ 
+    CU_ASSERT_TRUE_FATAL(cart_get_all_items(shop, 1, &items));
+    CU_ASSERT_TRUE(ioopm_list_is_empty(items));
+    ioopm_list_destroy(items);
+ 
+    shop_destroy(shop);
+}
+
+// ---------------------------------------------------------
+// Get carts
+// ---------------------------------------------------------
+
+void test_shop_get_carts()
+{
+    shop_t *shop = shop_create();
+    CU_ASSERT_PTR_NOT_NULL_FATAL(shop);
+ 
+    ioopm_list_t *ids = get_carts(shop);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(ids);
+    CU_ASSERT_TRUE(ioopm_list_is_empty(ids));
+    ioopm_list_destroy(ids);
+ 
+    new_cart(shop);
+    new_cart(shop);
+    new_cart(shop);
+    CU_ASSERT_TRUE(remove_cart(shop, 1));
+ 
+    ids = get_carts(shop);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(ids);
+    CU_ASSERT_EQUAL(ioopm_list_size(ids), 2);
+ 
+    bool seen0 = false, seen1 = false, seen2 = false;
+    ioopm_list_iterator_t *it;
+    for (it = ioopm_list_iterator_create(ids);
+         !ioopm_list_iterator_at_end(it);
+         ioopm_list_iterator_advance(it))
+    {
+        int id = ioopm_list_iterator_current(it).i;
+        if (id == 0) seen0 = true;
+        if (id == 1) seen1 = true;
+        if (id == 2) seen2 = true;
+    }
+    ioopm_list_iterator_destroy(it);
+    ioopm_list_destroy(ids);
+ 
+    CU_ASSERT_TRUE(seen0);
+    CU_ASSERT_FALSE(seen1);
+    CU_ASSERT_TRUE(seen2);
+ 
+    shop_destroy(shop);
+}
+
+// ---------------------------------------------------------
+// Cost
+// ---------------------------------------------------------
+
+void test_shop_cart_total_cost()
+{
+    shop_t *shop = shop_create();
+    CU_ASSERT_PTR_NOT_NULL_FATAL(shop);
+ 
+    size_t total = 999;
+ 
+    // no cart
+    CU_ASSERT_FALSE(cart_total_cost(shop, 0, &total));
+ 
+    // empty cart
+    new_cart(shop);
+    CU_ASSERT_TRUE(cart_total_cost(shop, 0, &total));
+    CU_ASSERT_EQUAL(total, 0);
+ 
+    // cart with items
+    add_to_db(shop, "car", "a fast car", 100);
+    add_to_db(shop, "bike", "a bicycle", 50);
+    CU_ASSERT_TRUE(add_to_cart(shop, 0, "car", 2));
+    CU_ASSERT_TRUE(add_to_cart(shop, 0, "bike", 3));
+    CU_ASSERT_TRUE(cart_total_cost(shop, 0, &total));
+    CU_ASSERT_EQUAL(total, 2 * 100 + 3 * 50);
+ 
+    shop_destroy(shop);
+}
+
+
+// ---------------------------------------------------------
 // Checkout
 // ---------------------------------------------------------
 void test_shop_checkout_empty()
@@ -427,26 +637,52 @@ void test_shop_checkout_empty()
     shop_destroy(shop);
 }
 
+void test_shop_checkout_no_cart()
+{
+    shop_t *shop = shop_create();
+    CU_ASSERT_PTR_NOT_NULL_FATAL(shop);
+ 
+    CU_ASSERT_FALSE(checkout_cart(shop, 0));
+ 
+    shop_destroy(shop);
+}
+
+void test_shop_checkout_never_stocked()
+{
+    shop_t *shop = shop_create();
+    CU_ASSERT_PTR_NOT_NULL_FATAL(shop);
+ 
+    add_to_db(shop, "pc", "you can game", 2000);
+    new_cart(shop);
+    CU_ASSERT_TRUE(add_to_cart(shop, 0, "pc", 1));
+ 
+    CU_ASSERT_FALSE(checkout_cart(shop, 0));
+    CU_ASSERT_TRUE(has_cart(shop, 0));
+ 
+    shop_destroy(shop);
+}
+
+
 void test_shop_checkout_valid()
 {
     shop_t *shop = shop_create();
     CU_ASSERT_PTR_NOT_NULL_FATAL(shop);
 
-    // add items to shop database
+    
     add_to_db(shop, "pc", "you can game", 2000);
 
     db_replenish(shop, "pc", "A01", 4);
 
-    // add items to carts
+
     new_cart(shop);
     new_cart(shop);
 
     add_to_cart(shop, 0, "pc", 2);
     add_to_cart(shop, 1, "pc", 2);
 
-    // checkout carts
-    CU_ASSERT_TRUE(checkout_cart(shop, 0)); // MEMORY ERROR: Use of uninitialised value of size 8
-    CU_ASSERT_TRUE(checkout_cart(shop, 1)); // MEMORY ERROR: Use of uninitialised value of size 8
+
+    CU_ASSERT_TRUE(checkout_cart(shop, 0)); 
+    CU_ASSERT_TRUE(checkout_cart(shop, 1));
 
     shop_destroy(shop);
 }
@@ -456,24 +692,54 @@ void test_shop_checkout_invalid()
     shop_t *shop = shop_create();
     CU_ASSERT_PTR_NOT_NULL_FATAL(shop);
 
-    // add items to shop database
+
     add_to_db(shop, "pc", "you can game", 2000);
 
     db_replenish(shop, "pc", "A01", 3);
 
-    // create carts and add items
+  
     new_cart(shop);
     new_cart(shop);
 
     add_to_cart(shop, 0, "pc", 2);
     add_to_cart(shop, 1, "pc", 2);
 
-    // checkout carts
+
     CU_ASSERT_TRUE(checkout_cart(shop, 0));
     CU_ASSERT_FALSE(checkout_cart(shop, 1));
 
     shop_destroy(shop);
 }
+
+void test_shop_checkout_consumes_cart_and_stock()
+{
+    shop_t *shop = shop_create();
+    CU_ASSERT_PTR_NOT_NULL_FATAL(shop);
+ 
+    add_to_db(shop, "pc", "you can game", 2000);
+    CU_ASSERT_TRUE(db_replenish(shop, "pc", "A01", 4));
+ 
+    new_cart(shop);
+    new_cart(shop);
+    new_cart(shop);
+    CU_ASSERT_TRUE(add_to_cart(shop, 0, "pc", 2));
+    CU_ASSERT_TRUE(add_to_cart(shop, 1, "pc", 2));
+    CU_ASSERT_TRUE(add_to_cart(shop, 2, "pc", 1));
+ 
+    CU_ASSERT_TRUE(checkout_cart(shop, 0));
+    CU_ASSERT_FALSE(has_cart(shop, 0));
+    CU_ASSERT_FALSE(checkout_cart(shop, 0));
+ 
+    CU_ASSERT_TRUE(checkout_cart(shop, 1));
+ 
+
+    CU_ASSERT_FALSE(checkout_cart(shop, 2));
+    CU_ASSERT_TRUE(has_cart(shop, 2)); 
+ 
+    shop_destroy(shop);
+}
+
+
 
 // ---------------------------------------------------------
 // Main
@@ -490,7 +756,7 @@ int main(void)
     CU_add_test(suite, "Create & destroy shop", test_shop_destroy);
 
     CU_add_test(suite, "Add item to db once", test_shop_add_merch_once);
-    CU_add_test(suite, "Add existing itemto db", test_shop_add_existing);
+    CU_add_test(suite, "Add existing item to db", test_shop_add_existing);
 
     CU_add_test(suite, "Remove item once", test_shop_remove_once);
     CU_add_test(suite, "Remove the same item twice", test_shop_remove_twice);
@@ -500,28 +766,41 @@ int main(void)
     CU_add_test(suite, "List database alphabetically", test_shop_list_db_alphabetical_order);
 
     CU_add_test(suite, "Get empty merchandise locations", test_shop_get_merch_locs_empty);
-
     CU_add_test(suite, "Get merchandise locations", test_shop_get_merch_locs);
 
     CU_add_test(suite, "Replenish stock", test_replenish_db);
 
     CU_add_test(suite, "add carts to shop", test_add_cart);
-
     CU_add_test(suite, "remove carts from shop", test_remove_cart);
 
     CU_add_test(suite, "add to cart", test_add_to_cart);
+    CU_add_test(suite, "add to cart invalid", test_shop_add_to_cart_invalid);
+
+    CU_add_test(suite, "has cart", test_shop_has_cart);
+
+    CU_add_test(suite, "edit nonexistent item", test_shop_edit_nonexistent);
+    CU_add_test(suite, "edit to taken name", test_shop_edit_name_taken);
+    CU_add_test(suite, "edit keeping same name", test_shop_edit_same_name);
 
     CU_add_test(suite, "add edit add", test_add_edit_add);
-    
+
     CU_add_test(suite, "remove from cart", test_remove_from_cart);
+    CU_add_test(suite, "remove from cart, not in cart", test_shop_remove_from_cart_not_in_cart);
 
     CU_add_test(suite, "get carts' content lists", test_list_cart);
 
+    CU_add_test(suite, "remove from db clears carts", test_shop_remove_from_db_clears_carts);
+
+    CU_add_test(suite, "get carts", test_shop_get_carts);
+
+    CU_add_test(suite, "cart total cost", test_shop_cart_total_cost);
+
     CU_add_test(suite, "empty checkout", test_shop_checkout_empty);
-
+    CU_add_test(suite, "checkout no cart", test_shop_checkout_no_cart);
+    CU_add_test(suite, "checkout never stocked", test_shop_checkout_never_stocked);
     CU_add_test(suite, "valid checkout", test_shop_checkout_valid);
-
     CU_add_test(suite, "invalid checkout", test_shop_checkout_invalid);
+    CU_add_test(suite, "checkout consumes cart and stock", test_shop_checkout_consumes_cart_and_stock);
 
     CU_basic_set_mode(CU_BRM_VERBOSE);
     CU_basic_run_tests();
