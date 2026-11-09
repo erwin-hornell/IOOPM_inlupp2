@@ -74,9 +74,12 @@ int print_items(ioopm_list_t *items)
             if(index % MAX_PRINT == 0)
             {
                 char next = ask_question_char(
-                    "Press any to continue listing or n/N to return");
-                if(toupper(next) == 'N');
+                    "Press any to continue listing or n/N to return: ");
+                if(toupper(next) == 'N')
+                {
+                    ioopm_list_iterator_destroy(it);
                     return index;
+                }
             }
             
             index++;
@@ -205,8 +208,9 @@ void menu_remove_item(shop_t *shop)
     {
         return;
     }
-    if(!confirm("Are you sure you want to remove item? (Y/y):"))
+    if(!confirm("Are you sure you want to remove item? (Y/N):"))
     {
+        free(name);
         return;
     }
     print_suc(remove_from_db(shop, name));
@@ -224,8 +228,11 @@ void menu_edit_item(shop_t *shop)
     char *new_desc = ask_question_string("new description: ");// uses strdup
     int new_price = ask_question_int("new price: ");
 
-    if(!confirm("Are you sure you want to remove item? (Y/y):"))
+    if(!confirm("Are you sure you want to remove item? (Y/N):"))
     {
+        free(new_name);
+        free(new_desc);
+        free(name);
         return;
     }
 
@@ -254,6 +261,8 @@ void menu_show_stock(shop_t *shop)
     if(!get_merch_locs(shop, name, &locs))
     {
         printf("Could not find locations of item: %s" , name);
+        free(name);
+        return;
     }
     print_locations(locs, name);
     free(name);
@@ -267,6 +276,7 @@ void menu_replenish(shop_t *shop)
     char *name;
     if(!try_ask_item(shop, &name))
     {
+        free(loc);
         return;
     }
 
@@ -290,7 +300,10 @@ void menu_cart_remove(shop_t *shop)
     {
         return;
     }
-    if(!confirm("Are you sure you want to remove the cart? (y/Y):"))
+    if(!confirm("Are you sure you want to remove the cart? (Y/N):"))
+    {
+        return;
+    }
     print_suc(remove_cart(shop, cart_id));
 }
 void menu_cart_add_item(shop_t *shop)
@@ -339,6 +352,7 @@ void menu_cart_cost(shop_t *shop)
     if(! cart_total_cost(shop, cart_id, &total_cost))
     {
         printf("Somthing went wrong\n");
+        return;
     }
     printf("The total cost of cart_%d: %d", cart_id, (int)total_cost);
 
@@ -440,7 +454,7 @@ void user_ui(shop_t *shop)
             break; */
 
         case 'Q':
-            end = confirm("Are you sure you want to end? (y/Y): ");
+            end = confirm("Are you sure you want to end? (Y/N): ");
             break;
         
         default:
