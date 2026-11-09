@@ -168,6 +168,25 @@ bool ioopm_hash_table_has_key(ioopm_hash_table_t *ht, const value_t key)
   }
 }
 
+bool ioopm_hash_table_edit(ioopm_hash_table_t *ht, const value_t key, const value_t new_key)
+{
+  entry_t *prev = find_previous_entry(ht, key);
+  bool key_availble = !ioopm_hash_table_has_key(ht, key) || ht->eq_fn(key, new_key);
+  if(!ioopm_hash_table_has_key(ht, key)
+    && key_availble)
+  {
+    return false;
+  }
+  value_t to_move;
+  
+  if(!ioopm_hash_table_remove(ht, key, &to_move))
+  {
+    return false;
+  }
+  ioopm_hash_table_insert(ht, new_key, to_move);
+  return true;
+}
+
 bool ioopm_hash_table_is_empty(const ioopm_hash_table_t *ht)
 {
 

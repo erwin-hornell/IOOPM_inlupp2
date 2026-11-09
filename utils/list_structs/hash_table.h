@@ -64,6 +64,15 @@ bool ioopm_hash_table_remove(ioopm_hash_table_t *ht, const value_t key, value_t 
 /// @return true if key is present else false
 bool ioopm_hash_table_has_key(ioopm_hash_table_t *ht, const value_t key);
 
+
+/// @brief Updates a entry with new key
+/// @param ht hash table we change in
+/// @param key key to change
+/// @param new_key new key
+/// @return true if key if edit successeded
+bool ioopm_hash_table_edit(ioopm_hash_table_t *ht, const value_t key, const value_t new_key);
+
+
 /// @brief Checks if hash table is empty
 /// @param ht hash table we check
 /// @return true if hash table is empty

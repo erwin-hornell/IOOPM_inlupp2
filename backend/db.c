@@ -113,22 +113,19 @@ bool edit_merch(db_t *db, char *name, char* new_name, char *new_desc, size_t new
     {
         return false;
     }
-    if(!ioopm_hash_table_remove(db->merch, PTR_AS_ELEM(name), &old))
+    if(!ioopm_hash_table_edit(db->merch, PTR_AS_ELEM(name), PTR_AS_ELEM(new_name)))
     {
         // should never fail
         return false;
     }
-    //update without destroing or moving item means shopping carts dont need to be updated
+    ioopm_hash_table_lookup(db->merch, PTR_AS_ELEM(name), &old);
     db_merch_t *to_update = old.p;
     free(item_name(to_update->item));
     free(item_desc(to_update->item));
-    item_update_name(to_update->item, strdup(new_name));
+    item_update_name(to_update->item, name);
     item_update_desc(to_update->item, strdup(new_desc));
     item_update_price(to_update->item, new_price);
 
-    ioopm_hash_table_insert(db->merch,
-                            PTR_AS_ELEM(item_name(to_update->item)),
-                            PTR_AS_ELEM(to_update));
     return true;
 }
 

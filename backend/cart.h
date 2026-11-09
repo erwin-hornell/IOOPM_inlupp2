@@ -58,6 +58,13 @@ bool cart_delete(cart_t *cart, char *name);
 /// @return boolean representing if merch was sucessfully removed cart
 bool cart_remove(cart_t *cart, item_t *item, size_t amount);
 
+/// @brief Updates a cart items name
+/// @param cart to update
+/// @param old_name 
+/// @param new_name 
+/// @return returns true if it could update name
+bool update_item(cart_t *cart, char *old_name, char *new_name);
+
 
 /// @brief how many of a given ware is in a cart
 /// @param cart a cart

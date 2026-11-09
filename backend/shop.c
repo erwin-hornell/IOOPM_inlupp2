@@ -12,7 +12,7 @@
 struct shop 
 {
     db_t *db;
-   ioopm_hash_table_t *carts; //should maybe be hash table
+    ioopm_hash_table_t *carts; //should maybe be hash table
     size_t carts_id;
 };
 
@@ -74,12 +74,28 @@ bool edit_item(shop_t *shop, char *name, char *new_name, char *new_desc, size_t 
     item_t *new_item;
     bool name_is_available = !get_merch(shop->db, new_name, &new_item) || strcmp(name, new_name) == 0;
     if(!get_merch(shop->db, name, &old_item) // Find item to edit
-    || !name_is_available // is new name available or new name is the same as old
-    || !remove_from_db(shop, name)) // try to remove
+    || !name_is_available) // try to remove
     {
         return false;
+    
     }
-    return add_to_db(shop, new_name, new_desc, new_price);
+    char *old_desc = item_desc(old_item);
+    char *key = strdup(new_name);
+
+    ioopm_hash_table_iterator_t *it;
+    for(it = ioopm_hash_table_iterator_create(shop->carts);
+        !ioopm_hash_table_iterator_at_end(it);
+        ioopm_hash_table_iterator_advance(it))
+    {
+        cart_t *cart = ioopm_hash_table_iterator_current_value(it).p;
+        update_item(cart, name, key);
+    }
+    ioopm_hash_table_iterator_destroy(it);
+
+    edit_merch(shop->db, name, key, new_desc, new_price);
+
+    //free(old_desc);
+    return true;
 }
 
 ioopm_list_t *list_db(shop_t *shop)
@@ -240,8 +256,9 @@ bool can_checkout(shop_t *shop, size_t id)
         char *name = item_name(cart_item);
         size_t amount = cart_amount(cart, cart_item);
         size_t amount_in_stock;
-        if(!get_stock(shop->db, name, &amount_in_stock)
-            || amount_in_stock < amount)
+
+        if(!get_stock(shop->db, name, &amount_in_stock) // get stock of item
+            || amount_in_stock < amount) // is there enough in stock to checkout
             {
                 ioopm_list_iterator_destroy(it);
                 ioopm_list_destroy(items);

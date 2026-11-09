@@ -228,7 +228,7 @@ void menu_edit_item(shop_t *shop)
     char *new_desc = ask_question_string("new description: ");// uses strdup
     int new_price = ask_question_int("new price: ");
 
-    if(!confirm("Are you sure you want to remove item? (Y/N):"))
+    if(!confirm("Are you sure you want to edit item? (Y/N):"))
     {
         free(new_name);
         free(new_desc);

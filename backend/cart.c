@@ -138,6 +138,17 @@ bool cart_remove(cart_t *cart, item_t *item, size_t amount)
     }
 }
 
+bool update_item(cart_t *cart, char *old_name, char *new_name)
+{
+    value_t old_cart_item_v;
+    value_t new_cart_item_v;
+    if (!ioopm_hash_table_lookup(cart->items, PTR_AS_ELEM(old_name), &old_cart_item_v))
+    {
+        return false;
+    }
+    return ioopm_hash_table_edit(cart->items, PTR_AS_ELEM(old_name), PTR_AS_ELEM(new_name));
+
+}
 
 size_t cart_amount(cart_t *cart, item_t *item)
 {

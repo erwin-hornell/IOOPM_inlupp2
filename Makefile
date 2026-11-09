@@ -1,6 +1,6 @@
 CC = gcc
 
-CFLAGS = -Wall -Wextra -g -O0 -I ../IOOPM_inlupp1
+CFLAGS = -Wall -Wextra -g -O0 -I
 LDLIBS = -lcunit
 VALGRIND = valgrind --leak-check=full
 GDB = gdb
@@ -23,7 +23,7 @@ TESTS_CART = tests/cart_tests.c
 TESTS_SHOP = tests/shop_tests.c
 
 
-IOOPM_SRC = ../IOOPM_inlupp1/hash_table.c ../IOOPM_inlupp1/linked_list.c
+IOOPM_SRC = utils/list_structs/hash_table.c utils/list_structs/linked_list.c
 
 all: $(TARGET_db) $(TARGET_cart) $(TARGET_shop) $(TARGET_main)
 
