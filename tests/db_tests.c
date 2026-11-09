@@ -2,6 +2,7 @@
 #include <string.h>
 #include "../backend/db.h"
 #include "../generics/generics.h"
+#include "../utils/utils.c" // hashtable and linked list
 
 // ---------------------------------------------------------
 // Create / destroy
