@@ -111,7 +111,23 @@ Data is from gcovr, see Run section for information on how to run.
  
 # Design choices
 
+* A shop holds a database and carts, and coordinates them.
 
+* Coupling between db and cart modules has been kept minimal.
+
+* A database keeps track of item types, as well as their stock (if any).
+
+* A cart keeps track of item types and amount added to it.
+
+* The database owns item types. The cart borows them.
+
+* A cart does not know if its order can be fulfilled - will be denied by shop if stock insufficient.
+
+* The header file utils.h holds functions and types specific only relevant for this particular program which must be available to multiple modules for smooth integration.
+
+* The header file string_utils.h holds general functions for reading terminal input.
+
+* list_structs holds modules for hash tables, linked lists, and iterators. The modules are from https://github.com/erwin-hornell/IOOPM_inlupp1.
 
 # Cleaning generated files
 
