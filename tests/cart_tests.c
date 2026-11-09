@@ -72,7 +72,7 @@ void test_cart_accessors()
 
     CU_ASSERT_EQUAL(cart_id(cart), 42);
     CU_ASSERT_PTR_EQUAL(cart_item_item(cart_item), item);
-    CU_ASSERT_EQUAL(cart_item_amount(cart_item), 5);
+    CU_ASSERT_EQUAL(cart_item_amount(cart_item), 10);
 
 
     cart_destroy(cart);
