@@ -739,6 +739,33 @@ void test_shop_checkout_consumes_cart_and_stock()
     shop_destroy(shop);
 }
 
+void test_shop_edited_ware_retains_stock() {
+    shop_t *shop = shop_create();
+    CU_ASSERT_PTR_NOT_NULL_FATAL(shop);
+
+    add_to_db(shop, "car", "goes fast", 10);
+    CU_ASSERT_TRUE(db_replenish(shop, "car", "H14", 7));
+
+    ioopm_list_t *locs;
+    CU_ASSERT_TRUE_FATAL(get_merch_locs(shop, "car", &locs));
+    CU_ASSERT_TRUE_FATAL(!ioopm_list_is_empty(locs));
+
+    char *loc = shelf_name(ioopm_list_head(locs).p);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(loc);
+    CU_ASSERT_STRING_EQUAL(loc, "H14");
+
+    CU_ASSERT_TRUE(edit_item(shop, "car", "truck", "lifts heavy", 20));
+
+    CU_ASSERT_TRUE_FATAL(get_merch_locs(shop, "truck", &locs));
+    CU_ASSERT_TRUE_FATAL(!ioopm_list_is_empty(locs));
+
+    loc = shelf_name(ioopm_list_head(locs).p);
+    CU_ASSERT_PTR_NOT_NULL_FATAL(loc);
+    CU_ASSERT_STRING_EQUAL(loc, "H14");
+
+    shop_destroy(shop);
+}
+
 
 
 // ---------------------------------------------------------
@@ -801,6 +828,8 @@ int main(void)
     CU_add_test(suite, "valid checkout", test_shop_checkout_valid);
     CU_add_test(suite, "invalid checkout", test_shop_checkout_invalid);
     CU_add_test(suite, "checkout consumes cart and stock", test_shop_checkout_consumes_cart_and_stock);
+
+    CU_add_test(suite, "edited ware retains stock", test_shop_edited_ware_retains_stock);
 
     CU_basic_set_mode(CU_BRM_VERBOSE);
     CU_basic_run_tests();

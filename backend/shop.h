@@ -46,11 +46,11 @@ bool edit_item(shop_t *shop, char *name, char *new_name, char *new_desc, size_t 
 /// @return a list of all items in the database
 ioopm_list_t *list_db(shop_t *shop);
 
-/// @brief returns all locations whare an item is stored
+/// @brief returns all locations whare an item is stored as shelf_t
 /// @param shop a shop
 /// @param name item name
-/// @param locs double pointer to point to list of locations
-/// @return bool representing if lookup was succesful (there was any merch of the given name)
+/// @param locs memory allocated for an ioopm_list_t*
+/// @return true if there was any merch of the given name
 bool get_merch_locs(shop_t *shop, char *name, ioopm_list_t **locs);
 
 /// @brief adds increases the amount stored at a location or adds a new location to an item

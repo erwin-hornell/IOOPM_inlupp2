@@ -4,5 +4,6 @@
         "editor.semanticHighlighting.enabled": true,
         "editor.stickyScroll.defaultModel": "foldingProviderModel",
         "editor.suggest.insertMode": "replace"
-    }
+    },
+    "makefile.configureOnOpen": true
 }
