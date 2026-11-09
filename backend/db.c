@@ -102,33 +102,42 @@ bool remove_merch(db_t *db, char *name)
     return true;
 }
 
-bool edit_merch(db_t *db, char *name, char* new_name, char *new_desc, size_t new_price)
+bool edit_merch(db_t *db, char *name, char *new_name, char *new_desc, size_t new_price)
 {
-    value_t old;
-    value_t updated; 
+    value_t old, other;
     if(!ioopm_hash_table_lookup(db->merch, PTR_AS_ELEM(name), &old))
     {
         return false;
     }
-    if(ioopm_hash_table_lookup(db->merch, PTR_AS_ELEM(new_name), &updated)
-        && old.p != updated.p)
+    if(ioopm_hash_table_lookup(db->merch, PTR_AS_ELEM(new_name), &other)
+        && old.p != other.p)
     {
         return false;
     }
+
+    // grab everything before re-keying
+    db_merch_t *entry = old.p;
+    item_t *item = entry->item;
+    char *old_name = item_name(item);
+    char *old_desc = item_desc(item);
+    char *desc_copy = strdup(new_desc);
+
     if(!ioopm_hash_table_edit(db->merch, PTR_AS_ELEM(name), PTR_AS_ELEM(new_name)))
     {
         // should never fail
+        free(desc_copy);
         return false;
     }
-    ioopm_hash_table_lookup(db->merch, PTR_AS_ELEM(name), &old);
-    db_merch_t *to_update = old.p;
-    free(item_name(to_update->item));
-    free(item_desc(to_update->item));
-    item_update_name(to_update->item, name);
-    item_update_desc(to_update->item, strdup(new_desc));
-    item_update_price(to_update->item, new_price);
 
+    item_update_name(item, new_name);   // was: name
+    item_update_desc(item, desc_copy);
+    item_update_price(item, new_price);
+
+    // free the old strings last, after everything is updated
+    if(old_name != new_name) free(old_name);
+    free(old_desc);
     return true;
+
 }
 
 bool get_merch(db_t *db, char *name, item_t **item)

@@ -71,17 +71,19 @@ bool remove_from_db(shop_t *shop, char *name)
 bool edit_item(shop_t *shop, char *name, char *new_name, char *new_desc, size_t new_price)
 {
     item_t *old_item;
-    item_t *new_item;
-    bool name_is_available = !get_merch(shop->db, new_name, &new_item) || strcmp(name, new_name) == 0;
-    if(!get_merch(shop->db, name, &old_item) // Find item to edit
-    || !name_is_available) // try to remove
+    item_t *other;
+    bool same_name = strcmp(name, new_name) == 0;
+
+    if(!get_merch(shop->db, name, &old_item)
+        || (!same_name && get_merch(shop->db, new_name, &other)))
     {
         return false;
-    
     }
-    char *old_desc = item_desc(old_item);
+
+  
     char *key = strdup(new_name);
 
+    
     ioopm_hash_table_iterator_t *it;
     for(it = ioopm_hash_table_iterator_create(shop->carts);
         !ioopm_hash_table_iterator_at_end(it);
@@ -92,9 +94,13 @@ bool edit_item(shop_t *shop, char *name, char *new_name, char *new_desc, size_t 
     }
     ioopm_hash_table_iterator_destroy(it);
 
-    edit_merch(shop->db, name, key, new_desc, new_price);
 
-    //free(old_desc);
+    if(!edit_merch(shop->db, name, key, new_desc, new_price))
+    {
+        // should not happen
+        free(key);
+        return false;
+    }
     return true;
 }
 
