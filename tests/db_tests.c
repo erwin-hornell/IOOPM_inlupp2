@@ -159,7 +159,7 @@ void test_db_update_stock()
 
 
 
-void test_db_update_reomve_stock()
+void test_db_update_remove_stock()
 {
     db_t *db = db_create();
     char *name = "car";
@@ -186,8 +186,6 @@ void test_db_update_reomve_stock()
 
     CU_ASSERT_TRUE(get_stock(db, name, &res));
 
-
-    printf("\n res:%d\n", res);
     CU_ASSERT_EQUAL(1, res);
     
     db_destroy(db);
@@ -255,7 +253,7 @@ int main(void)
     CU_add_test(suite, "Try to edit merch to exiting name", test_db_edit_exiting_name);
 
     CU_add_test(suite, "update stock once", test_db_update_stock);
-    CU_add_test(suite, "Replenish and reve stock",  test_db_update_reomve_stock);
+    CU_add_test(suite, "Replenish and remove stock",  test_db_update_remove_stock);
 
     CU_add_test(suite, "Get all items from db", test_db_get_all);
 
