@@ -176,7 +176,7 @@ char menu_main(shop_t *shop)
                         "P - Replenish stock    \n"
                         "C - Create new cart    \n"
                         "R - Remove cart        \n"
-                        "+ - Add to car         \n"
+                        "+ - Add to cart        \n"
                         "- - Remove from cart   \n"
                         "= - Cart cost          \n"
                         "O - Cart checkout      \n"
@@ -371,17 +371,25 @@ void menu_cart_checkout(shop_t *shop)
 
 void menu_undo(shop_t *shop)
 {
-    
+    (void) shop;
+
+    printf("Sorry, undo has not yet been implemented!\n");
+    print_suc(false);
 }
 
 void menu_save(shop_t *shop)
 {
-    
+    (void) shop;
+    printf("Sorry, saving has not yet been implemented!\n");
+    print_suc(false);
 }
 
 void menu_load(shop_t *shop)
 {
-    
+    (void) shop;
+
+    printf("Sorry, loading has not yet been implemented!\n");
+    print_suc(false);
 }
 
 
@@ -440,7 +448,7 @@ void user_ui(shop_t *shop)
         case 'O':
             menu_cart_checkout(shop);
             break;
-/* TODO: implement
+
         case 'Z':
             menu_undo(shop);
             break;
@@ -451,7 +459,7 @@ void user_ui(shop_t *shop)
 
         case 'G':
             menu_load(shop);
-            break; */
+            break;
 
         case 'Q':
             end = confirm("Are you sure you want to end? (Y/N): ");
