@@ -1,6 +1,6 @@
 CC = gcc
 
-CFLAGS = -Wall -Wextra -g -O0 -I
+CFLAGS = -Wall -Wextra -g -O0 -I --coverage
 LDLIBS = -lcunit
 VALGRIND = valgrind --leak-check=full
 GDB = gdb
@@ -8,8 +8,8 @@ GCOV = gcov
 COVERAGE = gcovr
 
 
-SHOP = backend/db.c backend/cart.c backend/shop.c
-PROF_DEST = ./tests/prof
+BACKEND = backend/db.c backend/cart.c backend/shop.c
+PROF_DEST = tests/prof
 TARGET_db = db_tests
 TARGET_cart = cart_tests
 TARGET_shop = shop_tests
@@ -17,7 +17,7 @@ TARGET_main = main
 UTILS = utils/utils.c
 STR_UTILS = utils/string_utils.c
 
-GENERICS = ./generics/generics.c
+GENERICS = generics/generics.c
 TESTS_DB = tests/db_tests.c
 TESTS_CART = tests/cart_tests.c
 TESTS_SHOP = tests/shop_tests.c
@@ -61,7 +61,7 @@ gdb-cart: $(TARGET_cart)
 
 
 # shop tests
-$(TARGET_shop): $(SHOP) $(TESTS_SHOP) $(IOOPM_SRC) $(GENERICS) | $(PROF_DEST)
+$(TARGET_shop): $(BACKEND) $(TESTS_SHOP) $(IOOPM_SRC) $(GENERICS) | $(PROF_DEST)
 	$(CC) $(CFLAGS) --coverage $^ -o $(PROF_DEST)/$@ $(LDLIBS)
 
 tests-shop: $(TARGET_shop)
@@ -74,7 +74,7 @@ gdb-shop: $(TARGET_shop)
 	$(GDB) ./$(PROF_DEST)/$(TARGET_shop)
 
 
-$(TARGET_main): main.c frontend/user_UI.c $(SHOP) $(IOOPM_SRC) $(GENERICS) $(UTILS) $(STR_UTILS)
+$(TARGET_main): main.c frontend/user_UI.c $(BACKEND) $(IOOPM_SRC) $(GENERICS) $(UTILS) $(STR_UTILS)
 	$(CC) $^ -o ./src/main
 
 run: $(TARGET_main)
