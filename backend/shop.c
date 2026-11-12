@@ -74,8 +74,8 @@ bool edit_item(shop_t *shop, char *name, char *new_name, char *new_desc, size_t 
     item_t *other;
     bool same_name = strcmp(name, new_name) == 0;
 
-    if(!get_merch(shop->db, name, &old_item)
-        || (!same_name && get_merch(shop->db, new_name, &other)))
+    if(!get_merch(shop->db, name, &old_item) // old name not used
+        || (!same_name && get_merch(shop->db, new_name, &other))) // new name in use
     {
         return false;
     }
