@@ -93,12 +93,19 @@ bool add_merch(db_t *db, char *name, char *desc, int price)
 
 bool remove_merch(db_t *db, char *name)
 {
-    value_t res; 
-    if(!ioopm_hash_table_remove(db->merch, PTR_AS_ELEM(name), &res))
+    if(!ioopm_hash_table_has_key(db->merch, PTR_AS_ELEM(name)))
     {
         return false;
     }
-    destroy_merch(res.p);
+
+    value_t res_ptr;
+    if(!ioopm_hash_table_remove(db->merch, PTR_AS_ELEM(name), &res_ptr))
+    {
+        return false;
+    }
+
+    db_merch_t *res = res_ptr.p;
+    destroy_merch(res);
     return true;
 }
 
