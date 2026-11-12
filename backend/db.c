@@ -103,14 +103,7 @@ bool remove_merch(db_t *db, char *name)
         return false;
     }
 
-    value_t res_ptr;
-    if(!ioopm_hash_table_remove(db->merch, PTR_AS_ELEM(name), &res_ptr))
-    {
-        return false;
-    }
-
-    db_merch_t *res = res_ptr.p;
-    destroy_merch(res);
+    destroy_merch(res.p);
     return true;
 }
 

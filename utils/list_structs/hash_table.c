@@ -170,7 +170,7 @@ bool ioopm_hash_table_has_key(ioopm_hash_table_t *ht, const value_t key)
 
 bool ioopm_hash_table_edit(ioopm_hash_table_t *ht, const value_t key, const value_t new_key)
 {
-  bool key_availble = !ioopm_hash_table_has_key(ht, key) || ht->eq_fn(key, new_key);
+  bool key_available = !ioopm_hash_table_has_key(ht, key) || ht->eq_fn(key, new_key);
   if(!ioopm_hash_table_has_key(ht, key)
     && key_available)
   {
