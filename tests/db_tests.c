@@ -106,7 +106,7 @@ void test_db_edit_once()
 
     CU_ASSERT_FALSE(edit_merch(db, name, new_name, new_desc, new_price));
     CU_ASSERT_TRUE(add_merch(db, name, desc, price));
-    CU_ASSERT_TRUE(edit_merch(db, name, new_name, new_desc, new_price));
+    CU_ASSERT_TRUE(edit_merch(db, name, strdup(new_name), new_desc, new_price));
     CU_ASSERT_FALSE(remove_merch(db, name));
     CU_ASSERT_TRUE(remove_merch(db, new_name));
 
