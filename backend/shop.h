@@ -89,7 +89,7 @@ bool has_cart(shop_t *shop, size_t id);
 /// @return true if cart could be found
 bool cart_get_all_items(shop_t *shop, size_t id, ioopm_list_t **items);
 
-/// @brief adds a new item to a cart from the db
+/// @brief adds a new item to a cart from the db (does NOT check if order can be satisfied)
 /// @param shop 
 /// @param id of cart
 /// @param item to be added

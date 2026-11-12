@@ -1,6 +1,6 @@
-## Inlupp 1
+## Inlupp 2
 
-Inlupp 1 is a C library created as part of the course Imperativ och objektorienterad programmeringsmetodik (1DL221), HT2026.
+Inlupp 2 is a C library created as part of the course Imperativ och objektorienterad programmeringsmetodik (1DL221), HT2026.
 
 # The project contains:
 

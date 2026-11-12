@@ -115,3 +115,11 @@ clean:
 	rm -f $(PROF_DEST)/*
 	rm -f src/*
 	rm -f gmon.out profile.txt
+
+# DOXYGEN
+
+doxy:
+	doxygen Doxyfile
+
+clean-doxy:
+	rm -rf docs
