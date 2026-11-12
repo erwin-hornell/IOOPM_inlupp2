@@ -11,7 +11,7 @@ typedef struct shop shop_t;
 /// @return an empty shop
 shop_t *shop_create();
 
-/// @brief destroys a shop
+/// @brief destroys a shop and all it contains
 /// @param shop 
 void shop_destroy(shop_t *shop);
 
@@ -24,14 +24,14 @@ void shop_destroy(shop_t *shop);
 /// @note name must be uniqe
 bool add_to_db(shop_t *shop, char *name, char *desc, size_t price);
 
-/// @brief removes an item type from db
+/// @brief removes an item type from db destroyng it and removing it from the db and form all carts
 /// @param shop 
 /// @param name of item to remove
 /// @return true if item was removed successfully
 bool remove_from_db(shop_t *shop, char *name);
 
 
-/// @brief edits an item in the database
+/// @brief edits an item in the database and updates the items in all carts
 /// @param shop to edit in
 /// @param name of the item to edit
 /// @param new_name 
@@ -41,19 +41,19 @@ bool remove_from_db(shop_t *shop, char *name);
 /// @note the new name must be uniqe
 bool edit_item(shop_t *shop, char *name, char *new_name, char *new_desc, size_t new_price);
 
-/// @brief returns all items in the database
+/// @brief returns all items in the database in an ioopm_list
 /// @param shop
 /// @return a list of all items in the database
 ioopm_list_t *list_db(shop_t *shop);
 
-/// @brief returns all locations whare an item is stored as shelf_t
+/// @brief returns all locations whare an item is stored as shelf_t in an ioopm_list
 /// @param shop a shop
 /// @param name item name
 /// @param locs memory allocated for an ioopm_list_t*
 /// @return true if there was any merch of the given name
 bool get_merch_locs(shop_t *shop, char *name, ioopm_list_t **locs);
 
-/// @brief adds increases the amount stored at a location or adds a new location to an item
+/// @brief adds/increases the amount stored at a location or adds a new location to an item
 /// @param shop 
 /// @param name of item
 /// @param loc name of the location
@@ -61,11 +61,11 @@ bool get_merch_locs(shop_t *shop, char *name, ioopm_list_t **locs);
 /// @return true if operation was successful
 bool db_replenish(shop_t *shop, char *name, char *loc, size_t amount);
 
-/// @brief adds a new empty cart to the shop
+/// @brief adds a new empty cart to the shop with a new id
 /// @param shop 
 void new_cart(shop_t *shop);
 
-/// @brief removes a cart from the shop
+/// @brief removes a cart from the shop removing the id as well
 /// @param shop 
 /// @param id 
 /// @return true if cart was removed
@@ -89,7 +89,7 @@ bool has_cart(shop_t *shop, size_t id);
 /// @return true if cart could be found
 bool cart_get_all_items(shop_t *shop, size_t id, ioopm_list_t **items);
 
-/// @brief adds a new item to a cart
+/// @brief adds a new item to a cart from the db
 /// @param shop 
 /// @param id of cart
 /// @param item to be added
@@ -105,7 +105,7 @@ bool add_to_cart(shop_t *shop, size_t id, char *name, size_t amount);
 /// @return true if items where successfully removed
 bool remove_from_cart(shop_t *shop, size_t id, char *name, size_t amount);
 
-/// @brief Returns the totla cost of a cart
+/// @brief Returns the total cost of all items in a given cart
 /// @param shop 
 /// @param id of cart
 /// @param total_cost pointer to total cost of cart
@@ -113,7 +113,7 @@ bool remove_from_cart(shop_t *shop, size_t id, char *name, size_t amount);
 bool cart_total_cost(shop_t *shop, size_t id, size_t *total_cost);
 
 
-/// @brief checksout cart
+/// @brief checksout a cart updating db stock;
 /// @param shop to check out from
 /// @param id of cart to checkout
 /// @return returns true if all items could be checked out
