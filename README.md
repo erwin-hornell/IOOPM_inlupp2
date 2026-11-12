@@ -119,6 +119,8 @@ Data is from gcovr, see Run section for information on how to run.
 
 * A cart keeps track of item types and amount added to it.
 
+* An item contains a name, a description and a price.
+
 * The database owns item types. The cart borows them.
 
 * A cart does not know if its order can be fulfilled - will be denied by shop if stock insufficient.
